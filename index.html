@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Schede interattive sulla propagazione VHF a 144 MHz: orizzonte, rifrazione, troposcatter, budget, aircraft scatter, condotti.">
+<link rel="icon" href="data:,">
 <style>html{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Oltre l'orizzonte in VHF</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -339,7 +340,7 @@ svg .hot{fill:var(--sig)} svg .tb{fill:var(--tropo)} svg .okc{fill:var(--ok)}
       <div class="fig"><svg id="v6" viewBox="0 0 720 480" role="img" aria-label="Vista dall'alto del path con aereo, livello del segnale e Doppler nel tempo"></svg></div>
       <div class="side">
         <button class="play" id="pl6">Avvia il passaggio</button>
-        <div class="ctl"><label for="tt">Tempo dall'incrocio <output id="tto"></output></label><input type="range" id="tt" min="-240" max="240" step="1" value="0"></div>
+        <div class="ctl"><label for="tt">Tempo dall'incrocio <output id="tto"></output></label><input type="range" id="tt" min="-240" max="240" step="any" value="0"></div>
         <div class="ctl"><label for="phi">Angolo tra rotta e path <output id="phio"></output></label><input type="range" id="phi" min="20" max="90" step="5" value="60"></div>
         <dl class="read"><dt>Segnale adesso</dt><dd id="r6s"></dd><dt>Doppler adesso</dt><dd id="r6d"></dd><dt>Finestra sopra soglia SSB</dt><dd class="big" id="r6w"></dd></dl>
         <p class="take">Da +10 a +20 dB per decine di secondi, con il Doppler che scivola. Con i dati ADS-B (AirScout) lo sked si prepara in anticipo.</p>
