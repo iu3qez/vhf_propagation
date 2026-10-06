@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Schede interattive sulla propagazione VHF a 144 MHz: orizzonte, rifrazione, troposcatter, budget, aircraft scatter, condotti.">
+<style>html{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Oltre l'orizzonte in VHF</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: striscia di schede in alto, una scheda alla volta; figura grande a sinistra, comandi e letture a destra. */
+:root{
+  --bg:#e9eef3; --panel:#f7f9fb; --ink:#13212f; --muted:#526476; --line:#c2cdd8;
+  --earth:#b4c2d0; --sig:#c84a08; --tropo:#14609f; --ok:#18764e; --zone:rgba(20,96,159,.09); --beam:rgba(200,74,8,.13);
+  --f-disp:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0d151e; --panel:#15202c; --ink:#e7eef5; --muted:#93a5b7; --line:#2c3c4d;
+  --earth:#31445a; --sig:#ff9247; --tropo:#63b4f4; --ok:#5fd39a; --zone:rgba(99,180,244,.10); --beam:rgba(255,146,71,.16); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0d151e; --panel:#15202c; --ink:#e7eef5; --muted:#93a5b7; --line:#2c3c4d;
+  --earth:#31445a; --sig:#ff9247; --tropo:#63b4f4; --ok:#5fd39a; --zone:rgba(99,180,244,.10); --beam:rgba(255,146,71,.16); color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.5 var(--f-body);padding-inline:clamp(16px,3vw,40px);padding-block:20px 40px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 24px}
+.top h1{font:600 clamp(26px,3.2vw,38px)/1.05 var(--f-disp);margin:0;letter-spacing:.01em;text-wrap:balance}
+.top p{margin:0;color:var(--muted);font-size:14px}
+.eyebrow,.num{font:500 13px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+
+.station{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px 14px;font-size:15px}
+.station .st-t{font:500 13px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.station label{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.station .st-n{font-size:13px;color:var(--muted)}
+select{font:500 15px var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 8px;max-width:100%}
+nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.tab{flex:none;font:500 15px/1 var(--f-body);color:var(--muted);background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px 9px;cursor:pointer;display:flex;gap:8px;align-items:baseline}
+.tab b{font:500 13px var(--f-mono)}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--sig)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--tropo);outline-offset:2px}
+
+.sheet{display:flex;flex-direction:column;gap:18px}
+.head{display:flex;flex-direction:column;gap:6px;max-width:68ch}
+.head h2{font:600 clamp(32px,4.4vw,52px)/1.02 var(--f-disp);margin:0;text-wrap:balance}
+.lead{margin:0;font-size:19px;color:var(--muted)}
+.cols{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow-x:auto;min-width:0}
+.fig svg{display:block;width:100%;min-width:600px;height:auto}
+.figs{display:flex;flex-direction:column;gap:14px;min-width:0}
+.seg.sub{align-self:flex-start;max-width:100%}
+.side{display:flex;flex-direction:column;gap:18px;min-width:0}
+
+.ctl{display:flex;flex-direction:column;gap:6px}
+.ctl label,.ctl .lab{font-size:15px;color:var(--muted);display:flex;justify-content:space-between;gap:12px}
+.ctl output{font:500 15px var(--f-mono);color:var(--ink);white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--sig);margin:0;height:28px}
+.seg{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{flex:1 1 auto;font:500 15px/1.2 var(--f-body);padding:9px 10px;background:var(--panel);color:var(--muted);border:0;border-right:1px solid var(--line);cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.play{align-self:flex-start;font:600 15px var(--f-body);padding:9px 18px;border-radius:4px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer}
+
+.read{margin:0;display:grid;grid-template-columns:minmax(42%,1fr) auto;gap:8px 16px;align-items:baseline;border-top:1px solid var(--line);padding-top:14px}
+.read dt{color:var(--muted);font-size:15px}
+.read.stack{grid-template-columns:minmax(0,1fr);gap:2px}.read.stack dd{text-align:left;margin-bottom:12px;font-size:20px}.read.stack dd.big{font-size:28px}
+.read dd{margin:0;font:500 22px/1.1 var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.read dd.big{font-size:34px;color:var(--sig)}
+.read dd small{font-size:14px;color:var(--muted);font-weight:400}
+.take{margin:0;font-size:19px;font-weight:500;line-height:1.35;border-left:3px solid var(--sig);padding-left:14px}
+.note{margin:0;font-size:14px;color:var(--muted)}
+details{font-size:15px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+summary{cursor:pointer;color:var(--ink);font-weight:500}
+details p{margin:8px 0 0}
+.ex{margin-top:10px;border-top:1px dashed var(--line)}
+.ex ol{margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:5px}
+.ex li::marker{font-family:var(--f-mono);font-size:13px}
+.spk{max-width:84ch}
+.bib{max-width:92ch;display:flex;flex-direction:column;gap:10px}
+.bib h3{font:600 22px/1.1 var(--f-disp);margin:14px 0 0;letter-spacing:.01em}
+.bib ol{margin:0;padding-left:28px;display:flex;flex-direction:column;gap:14px}
+.bib li::marker{font:500 14px var(--f-mono);color:var(--muted)}
+.bib p{margin:0}.bib .ref{font-size:17px}.bib .use{font-size:15px;color:var(--muted);margin-top:3px}
+.bib a{color:var(--tropo)}
+.st{font:500 12px var(--f-mono);letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--line);border-radius:3px;padding:1px 6px;margin-right:6px;white-space:nowrap;color:var(--muted)}
+.st.ok{color:var(--ok);border-color:var(--ok)}.st.mid{color:var(--tropo);border-color:var(--tropo)}
+.spk ul{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:16px}
+.spk b{color:var(--ink)}
+code{font:400 14px var(--f-mono);color:var(--ink)}
+
+.meter{display:flex;flex-direction:column;gap:4px}
+.meter .cap{display:flex;justify-content:space-between;font-size:15px;color:var(--muted)}
+.meter .cap b{font:500 17px var(--f-mono);color:var(--ink)}
+.bar{height:14px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--tropo)}
+.bar.los i{background:var(--ok)}
+.scale{display:flex;justify-content:space-between;font:400 11px var(--f-mono);color:var(--muted)}
+
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:7px 10px 7px 0;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:13px;text-transform:uppercase;letter-spacing:.06em}
+td.n{padding-left:14px;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;padding-right:0}
+th.n{text-align:right;padding-right:0}
+tr.on td{color:var(--sig);font-weight:600}
+.tw{overflow-x:auto}
+.chips{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none;font-size:15px}
+.chips li{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.chips .in{color:var(--ok);font-weight:600}
+.chips .out{color:var(--muted)}
+
+.foot{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:14px}
+.foot button{font:500 15px var(--f-body);background:none;border:1px solid var(--line);color:var(--ink);padding:9px 16px;border-radius:4px;cursor:pointer}
+.foot button:disabled{opacity:.35;cursor:default}
+
+/* SVG */
+svg text{font-family:var(--f-body);font-size:13px;fill:var(--muted)}
+svg .ink{fill:var(--ink)} svg .b{font-weight:600} svg .mono{font-family:var(--f-mono)}
+svg .hot{fill:var(--sig)} svg .tb{fill:var(--tropo)} svg .okc{fill:var(--ok)}
+.grid{stroke:var(--line);stroke-width:1;fill:none}
+.earth{fill:var(--earth);stroke:none}
+.mt{fill:var(--muted);stroke:none}
+.ray{stroke:var(--sig);stroke-width:2.5;fill:none}
+.ray2{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:6 5;fill:none}
+.curve{stroke:var(--tropo);stroke-width:3;fill:none}
+.thin{stroke:var(--muted);stroke-width:1.2;fill:none}
+.zone{fill:var(--zone);stroke:none}
+.beam{fill:var(--beam);stroke:none}
+.vol{fill:var(--sig);fill-opacity:.45;stroke:var(--sig);stroke-width:1.5}
+.dot{fill:var(--sig);stroke:var(--panel);stroke-width:2}
+.dotb{fill:var(--tropo);stroke:var(--panel);stroke-width:2}
+.okl{stroke:var(--ok);stroke-width:2.5;fill:none}
+.los{stroke:var(--ink);stroke-width:3;fill:none}
+.leg{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 16px;font-size:15px;align-items:baseline}
+.leg dt{font-weight:600;display:flex;align-items:baseline;gap:8px;white-space:nowrap}.leg dt .sw{align-self:center}.leg dd{margin:0;color:var(--muted)}
+.sw{display:inline-block;width:14px;height:14px;border-radius:2px;flex:none}i.b1{background:var(--line)}i.b2{background:var(--tropo)}i.b3{background:var(--sig)}i.b4{background:var(--ink)}i.b5{background:var(--ok)}
+@media (max-width:600px){.leg{grid-template-columns:minmax(0,1fr)}.leg dd{margin-bottom:6px}}
+.b1{fill:var(--line)}.b2{fill:var(--tropo)}.b3{fill:var(--sig)}.b4{fill:var(--ink)}.b5{fill:var(--ok)}
+.okz{fill:var(--ok);fill-opacity:.12;stroke:none}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div><p class="eyebrow">144 MHz · serata propagazione</p><h1>Oltre l'orizzonte in VHF</h1></div>
+    <p>IU3QEZ · dall'articolo «QRP in VHF: ma perché andiamo così lontano?», GEKO 69</p>
+  </header>
+  <div class="station" role="group" aria-label="La stazione">
+    <span class="st-t">La stazione</span>
+    <label for="selP">Potenza <select id="selP"><option value="1">1 W</option><option value="5" selected>5 W</option><option value="10">10 W</option><option value="25">25 W</option><option value="50">50 W</option><option value="100">100 W</option><option value="500">500 W</option></select></label>
+    <label for="selG">Antenna <select id="selG"><option value="0">Verticale · 0 dBd</option><option value="6">3 el. · 6 dBd</option><option value="9">5 el. · 9 dBd</option><option value="13.2">10 el. · 13,2 dBd</option><option value="16.2" selected>2×10 el. · 16,2 dBd</option><option value="19.2">4×10 el. · 19,2 dBd</option></select></label>
+    <span class="st-n">stessa antenna dal corrispondente · vale per le schede 3 e 5</span>
+  </div>
+  <nav id="tabs" role="tablist" aria-label="Schede"></nav>
+
+  <section class="sheet" id="p0" data-tab="Ricezione" data-n="0">
+    <div class="head"><p class="num">0 / 8 · catena di ricezione</p><h2>Il rumore da sfondare</h2>
+      <p class="lead">Per essere ascoltati bisogna superare il rumore di chi riceve. Una parte nasce nel ricevitore; l'altra, spesso la più grande, entra dall'antenna.</p></div>
+    <div class="cols">
+      <div class="figs"><div class="fig"><svg id="v0" viewBox="0 0 720 430" role="img" aria-label="Catena di ricezione e livelli di rumore in dBm"></svg></div>
+        <dl class="leg">
+          <dt><i class="sw b1"></i>Termico ideale, kTB</dt><dd>Il rumore minimo che la fisica consente in quella banda, a temperatura ambiente. Nessun ricevitore scende sotto.</dd>
+          <dt><i class="sw b2"></i>Solo catena di ricezione</dt><dd>Il rumore che avresti con preampli, linea e ricevitore, se dall'antenna non entrasse nient'altro.</dd>
+          <dt><i class="sw b3"></i>Solo rumore esterno</dt><dd>Quello che entra dall'antenna, da attività umane e rumore di fondo «galattico», con un ricevitore perfetto.</dd>
+          <dt><i class="sw b4"></i>Rumore che si ascolta alla radio<br>(rumore totale)</dt><dd>La somma dei due: è il fruscio che senti a banda libera. Un segnale più debole resta coperto.</dd>
+          <dt><i class="sw b5"></i>Segnale minimo</dt><dd>Rumore di fondo più il margine richiesto dal modo di emissione. È il livello da superare per essere ascoltati.</dd>
+        </dl></div>
+      <div class="side">
+        <div class="ctl"><span class="lab">Ambiente di chi riceve (rumore ITU-R P.372)</span><div class="seg" data-key="env" data-r="0"><button data-v="city">Città</button><button data-v="res">Residenziale</button><button data-v="rur">Rurale</button><button data-v="quiet">Rurale quieto</button><button data-v="ideal">Solo termico</button></div></div>
+        <div class="ctl"><span class="lab">Preamplificatore da palo</span><div class="seg" data-key="pre" data-r="0"><button data-v="1">Sì</button><button data-v="0">No</button></div></div>
+        <div class="ctl"><label for="lrx">Perdita della linea <output id="lrxo"></output></label><input type="range" id="lrx" min="0" max="6" step="0.5" value="1"></div>
+        <div class="ctl"><label for="nfr">Cifra di rumore del ricevitore <output id="nfro"></output></label><input type="range" id="nfr" min="1" max="10" step="0.5" value="5"></div>
+        <div class="ctl"><span class="lab">Modo</span><div class="seg" data-key="mode" data-r="0"><button data-v="FM">FM</button><button data-v="SSB">SSB</button><button data-v="CW">CW</button><button data-v="FT8">FT8</button></div></div>
+        <dl class="read"><dt>Rumore esterno, sopra il termico</dt><dd id="r0a"></dd><dt>Cifra di rumore della catena</dt><dd id="r0b"></dd><dt>Rumore che si ascolta alla radio (totale)</dt><dd id="r0c"></dd><dt>Segnale minimo per farsi sentire</dt><dd class="big" id="r0d"></dd><dt>Chi comanda</dt><dd id="r0e" style="font-size:19px"></dd></dl>
+        <p class="take">Fuori dai posti più quieti il limite lo fissa il rumore che entra dall'antenna, non il ricevitore. E vale per tutti: non si compra con i watt.</p>
+        <p class="note">Il preamplificatore serve finché la catena è più rumorosa dell'ambiente. Oltre, migliorare il ricevitore non cambia nulla.</p>
+        <p class="note">Valori mediani ITU-R P.372 per un'antenna omnidirezionale vicino al suolo, da misure storiche. Una Yagi puntata all'orizzonte può vederne di più o di meno; in città oggi è spesso peggio.</p>
+        <details><summary>Formula</summary><p>Rumore artificiale mediano: <code>Fa = c − d · log f(MHz)</code> dB sopra il termico, con c e d dipendenti dall'ambiente. Catena con preampli in antenna: <code>F = F_pre + (L · F_rx − 1) / G_pre</code>; senza: <code>F = L · F_rx</code>. Totale: <code>f = fa + F − 1</code>. Rumore totale in banda: <code>−174 + 10 · log f + 10 · log B</code> dBm. Preampli: NF 0,8 dB, guadagno 20 dB. Soglie: CW 0 dB in 500 Hz, SSB 10 dB in 2,4 kHz, FM 17 dB in 12 kHz, FT8 −21 dB in 2,5 kHz.</p><details class="ex"><summary>Esempio svolto: ambiente rurale, SSB, con preampli</summary><ol><li>Rumore artificiale: <code>67,2 − 27,7 · log 144 = 67,2 − 59,8 = 7,4 dB</code>, cioè un fattore <code>5,5</code>.</li><li>Rumore galattico: <code>52,0 − 23,0 · log 144 = 2,4 dB</code>, fattore <code>1,7</code>.</li><li>Rumore esterno totale: <code>5,5 + 1,7 = 7,2</code>, cioè <code>8,6 dB</code> sopra il termico.</li><li>Catena: preampli <code>0,8 dB = 1,20</code>; linea 1 dB e ricevitore 5 dB contano divisi per 100: <code>(1,26 · 3,16 − 1) / 100 = 0,03</code>.</li><li>Cifra della catena: <code>1,20 + 0,03 = 1,23</code>, cioè <code>0,9 dB</code>.</li><li>Totale: <code>7,2 + 1,23 − 1 = 7,5</code>, cioè <code>8,7 dB</code>. Il ricevitore pesa per 0,1 dB.</li><li>Rumore totale in 2,4 kHz: <code>−174 + 8,7 + 33,8 = −131,5 dBm</code>.</li><li>Per la SSB servono 10 dB in più: <code>−121,5 dBm</code>. Con il solo ricevitore sarebbero <code>−129,3 dBm</code>.</li></ol></details></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="p1" data-tab="Orizzonte" hidden>
+    <div class="head"><p class="num">1 / 8 · portata ottica</p><h2>Fino a dove l'antenna riesce a vedere</h2>
+      <p class="lead">In portata ottica il segnale è forte e stabile. Quanto è lontano l'orizzonte dipende dalla quota e da quanto l'aria piega il raggio.</p></div>
+    <div class="cols">
+      <div class="fig"><svg id="v1" viewBox="0 0 720 360" role="img" aria-label="Due stazioni in quota e raggio radente alla Terra"></svg></div>
+      <div class="side">
+        <div class="ctl"><label for="h1">Quota stazione A <output id="h1o"></output></label><input type="range" id="h1" min="0" max="3000" step="50" value="1000"></div>
+        <div class="ctl"><label for="h2">Quota stazione B <output id="h2o"></output></label><input type="range" id="h2" min="0" max="3000" step="50" value="1000"></div>
+        <div class="ctl"><span class="lab">Atmosfera</span>
+          <div class="seg" data-key="k1" data-r="1"><button data-v="1">Solo geometria (k = 1)</button><button data-v="1.3333">Aria standard (k = 4/3)</button></div></div>
+        <dl class="read"><dt>Orizzonte di A</dt><dd id="r1a"></dd><dt>Orizzonte di B</dt><dd id="r1b"></dd><dt>Portata ottica A–B</dt><dd class="big" id="r1t"></dd></dl>
+        <p class="take">Due cime da 1000 m si vedono fino a circa 260 km. Dentro questa distanza basta un palmare.</p>
+        <p class="note">Disegno non in scala: la curvatura è molto esagerata.</p>
+        <details><summary>Formula</summary><p><code>d = √(2 · k · R · h)</code> per ciascuna stazione, con <code>R = 6371 km</code>. Con <code>k = 4/3</code> l'orizzonte cresce di <code>√(4/3) ≈ 1,15</code>.</p><details class="ex"><summary>Esempio svolto: due cime da 1000 m</summary><ol><li>Raggio efficace: <code>R_eff = 4/3 · 6371 = 8495 km</code>.</li><li>Quota in chilometri: <code>h = 1000 m = 1 km</code>.</li><li>Prodotto sotto radice: <code>2 · 8495 · 1 = 16 990 km²</code>.</li><li>Radice: <code>d = √16 990 = 130,3 km</code>. È l'orizzonte di una stazione.</li><li>Due stazioni uguali: <code>130,3 + 130,3 = 260,7 km</code> di portata ottica.</li><li>Senza atmosfera (k = 1): <code>√(2 · 6371 · 1) = 112,9 km</code> per stazione.</li></ol></details></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="p2" data-tab="Rifrazione" hidden>
+    <div class="head"><p class="num">2 / 8 · rifrazione</p><h2>L'aria piega il raggio</h2>
+      <p class="lead">La rifrattività dell'aria cala con la quota e curva il raggio verso terra. Più forte è il gradiente, più lontano finisce l'orizzonte.</p></div>
+    <div class="cols">
+      <div class="fig"><svg id="v2" viewBox="0 0 720 380" role="img" aria-label="Raggio radio curvato dal gradiente di rifrattività"></svg></div>
+      <div class="side">
+        <div class="ctl"><label for="dn">Gradiente di rifrattività dN/dh <output id="dno"></output></label><input type="range" id="dn" min="-300" max="40" step="1" value="-40"></div>
+        <dl class="read"><dt>Regime</dt><dd id="r2r" style="font-size:19px"></dd><dt>Fattore k</dt><dd id="r2k"></dd><dt>Orizzonte radio da 1000 m</dt><dd class="big" id="r2h"></dd><dt>Quota del raggio a 300 km</dt><dd id="r2q"></dd></dl>
+        <p class="take">Aria standard: −40 N/km, cioè k = 4/3. A −157 N/km il raggio segue la curvatura della Terra: oltre quella soglia c'è il condotto.</p>
+        <p class="note"><b>Cos'è N.</b> L'indice di rifrazione dell'aria, n, è quasi 1: al suolo circa 1,000300. Per comodità si usa <code>N = (n − 1) · 10⁶</code>, cioè di quanto n supera 1, in parti per milione: 1,000300 diventa N = 300. −40 N/km vuol dire che N cala di 40 per ogni chilometro di quota.</p>
+        <p class="note"><b>L'atmosfera di solito aiuta.</b> Nel vuoto N = 0 a ogni quota e il raggio va dritto. Nell'aria N è sempre positivo e di norma cala salendo: in condizioni standard di 40 per chilometro, cioè −40 N/km.</p>
+        <p class="note"><b>Il segno.</b> A cambiare segno è la variazione di N con la quota, non N. Negativa: N cala salendo, il raggio piega verso terra e l'orizzonte si allunga; più è negativa, più piega. Zero: raggio dritto, come senza atmosfera. Positiva: N cresce salendo, il raggio piega verso l'alto e l'orizzonte si accorcia. È un caso raro, la sub-rifrazione.</p>
+        <p class="note">Schema con gradiente uniforme a ogni quota. Un condotto vero è uno strato sottile: vedi scheda 7.</p>
+        <details><summary>Formula</summary><p><code>N = (n − 1) · 10⁶</code>. Curvatura del raggio <code>≈ −dn/dh</code>. Terra equivalente: <code>k = 1 / (1 + R · dN/dh · 10⁻⁶)</code>. Soglie: 0, −79 e −157 N/km.</p><details class="ex"><summary>Esempio svolto: aria standard, −40 N/km</summary><ol><li>Gradiente: <code>dN/dh = −40 N/km</code>.</li><li>Prodotto con il raggio terrestre: <code>6371 · (−40) · 10⁻⁶ = −0,255</code>.</li><li>Denominatore: <code>1 − 0,255 = 0,745</code>.</li><li>Fattore k: <code>k = 1 / 0,745 = 1,34</code>, cioè il classico 4/3.</li><li>Soglia del condotto: il denominatore si annulla per <code>dN/dh = −1 / (6371 · 10⁻⁶) = −157 N/km</code>.</li></ol></details></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="p3" data-tab="Il muro" hidden>
+    <div class="head"><p class="num">3 / 8 · oltre l'orizzonte</p><h2>Il muro, e cosa c'è dopo</h2>
+      <p class="lead">In vista ottica il segnale si diluisce piano. Appena oltre l'orizzonte crolla, poi smette di peggiorare in fretta. Sposta il corrispondente e guarda lo S-meter.</p></div>
+    <div class="seg sub" data-key="sub3" data-r="3"><button data-v="a">3a · In vista ottica: la diluizione</button><button data-v="b">3b · Oltre l'orizzonte: il muro</button></div>
+    <div id="p3a"><div class="cols">
+      <div class="fig"><svg id="v3a" viewBox="0 0 720 340" role="img" aria-label="Cono radio che si apre con la distanza: il disco illuminato cresce con il quadrato"></svg></div>
+      <div class="side">
+        <div class="ctl"><label for="da">Distanza del ricevitore <output id="dao"></output></label><input type="range" id="da" min="0" max="100" step="1" value="27"></div>
+        <div class="meter"><div class="cap"><span>S-meter del ricevitore</span><b id="m3c"></b></div><div class="bar"><i id="b3c"></i></div>
+          <div class="scale"><span>S1</span><span>S5</span><span>S9</span><span>+20</span><span>+40</span><span>+60</span></div></div>
+        <dl class="read"><dt>Area illuminata, rispetto a 20 km</dt><dd id="r3a1"></dd><dt>Segnale, rispetto a 20 km</dt><dd class="big" id="r3a2"></dd><dt>Punti S persi</dt><dd id="r3a3"></dd><dt>Attenuazione di spazio libero</dt><dd id="r3a4"></dd></dl>
+        <p class="take">Raddoppi la distanza: l'area quadruplica e il segnale cala di 6 dB, un punto S. In vista ottica la distanza costa poco.</p>
+        <p class="note">S-meter per la stazione scelta in alto. Vale solo finché le due stazioni si vedono: il limite è quello della scheda 1.</p>
+        <details><summary>Formula</summary><p>La potenza si distribuisce su un'area che cresce come <code>d²</code>; l'antenna ricevente ne intercetta una porzione fissa. Attenuazione di spazio libero a 144 MHz: <code>75,6 + 20 · log d(km)</code> dB, cioè 6 dB a ogni raddoppio.</p><details class="ex"><summary>Esempio svolto: 144 MHz a 100 km</summary><ol><li>Formula generale: <code>L = 32,45 + 20 · log f(MHz) + 20 · log d(km)</code>.</li><li>Termine di frequenza: <code>20 · log 144 = 43,17 dB</code>.</li><li>Costante a 144 MHz: <code>32,45 + 43,17 = 75,6 dB</code>.</li><li>Termine di distanza: <code>20 · log 100 = 40 dB</code>.</li><li>Totale: <code>75,6 + 40 = 115,6 dB</code>.</li><li>A 200 km: <code>20 · log 2 = 6 dB</code> in più, quindi <code>121,6 dB</code>.</li></ol></details></details>
+      </div>
+    </div></div>
+    <div id="p3b" hidden><div class="cols">
+      <div class="fig"><svg id="v3" viewBox="0 0 720 420" role="img" aria-label="Perdita di percorso troposferica in funzione della distanza"></svg></div>
+      <div class="side">
+        <div class="ctl"><label for="d3">Distanza del corrispondente <output id="d3o"></output></label><input type="range" id="d3" min="20" max="800" step="5" value="300"></div>
+        
+        <div class="meter"><div class="cap"><span>S-meter del corrispondente</span><b id="m3b"></b></div><div class="bar"><i id="b3b"></i></div>
+          <div class="scale"><span>S1</span><span>S5</span><span>S9</span><span>+20</span><span>+40</span><span>+60</span></div></div>
+        <dl class="read"><dt>Perdita oltre l'orizzonte</dt><dd id="r3l"></dd><dt>Pendenza in questo punto</dt><dd id="r3s"></dd></dl>
+        <p class="take">Dopo il crollo, 100 km in più costano circa 10 dB. Il segnale è debole, ma c'è sempre.</p>
+        <p class="note"><b>L'antenna conta più della potenza.</b> Oltre il muro ogni decibel pesa, e non tutti valgono uguale. La potenza aiuta in un solo verso: fa arrivare più forte te al corrispondente. L'antenna ha un doppio beneficio: rinforza il tuo segnale in trasmissione e, con lo stesso guadagno, quello del corrispondente in ricezione. Un QSO si chiude sul verso più debole, quindi 3 dB di antenna valgono più di 3 dB di lineare.</p>
+        <p class="note">S-meter calcolato per la stazione scelta in alto, con 1 dB di linea per lato (S9 = −93 dBm). Curva ridisegnata dai dati di Fig. 4.29(A), ARRL Antenna Book, cap. 4: mediana, 50% del tempo.</p>
+      </div>
+    </div></div>
+    <details class="spk"><summary>Note per l'oratore: perché 3a e 3b non danno lo stesso valore</summary>
+      <ul>
+        <li><b>A 20 km la 3a dà 102 dB, la 3b ne dà 140.</b> Sono 38 dB, oltre sei punti S: con 5 W e 2×10 elementi lo S-meter passa da S9+63 a S9+25. Non è un errore: sono due stazioni diverse.</li>
+        <li><b>La 3a è lo spazio libero.</b> Due antenne che si vedono con tutta la zona di Fresnel sgombra: il caso da cima a cima.</li>
+        <li><b>La 3b è la curva di Norton e Bray.</b> Due antenne a 9 m dal suolo su terreno liscio. L'orizzonte radio di ciascuna è a 12,5 km: a 20 km si vedono ancora, ma appena.</li>
+        <li><b>Riflessione dal suolo.</b> Con antenne basse il raggio riflesso arriva quasi in opposizione di fase e cancella gran parte del diretto. Su terra piana la perdita cresce come d⁴ e a 20 km vale circa 134 dB.</li>
+        <li><b>Fresnel ostruita.</b> A metà percorso il raggio della prima zona è circa 100 m, mentre la linea di vista passa a circa 3 m dal suolo. La curvatura della Terra entra quasi tutta nel sigaro e aggiunge altri dB.</li>
+        <li><b>Dove coincidono.</b> Solo sotto circa 400 m di distanza. Oltre, la 3a vale finché c'è vista ottica libera; la 3b vale per stazioni basse e, dopo l'orizzonte, per tutti.</li>
+      </ul>
+    </details>
+    <details class="spk"><summary>Note per l'oratore: da dove viene la curva</summary>
+      <ul>
+        <li><b>Il riferimento è il 99%.</b> Per un ponte radio conta l'ora peggiore. Il radioamatore sta all'estremo opposto: sceglie il momento e gli basta che il QSO si chiuda una volta.</li>
+        <li><b>Le ore buone valgono molto.</b> Dalla Figura 13, nel 10% migliore delle ore la perdita è 7–8 dB sotto la mediana alle grandi distanze, e fino a 14 dB appena oltre l'orizzonte. Nell'1% migliore si arriva a 13 dB e 29 dB. Sulla curva sono rispettivamente 80–100 km e oltre 130 km in più.</li>
+        <li><b>Terra liscia, antenne a 9 m.</b> È lo scenario di un sito commerciale in pianura. Una stazione da contest in quota parte avvantaggiata per l'angolo d'orizzonte, come nella scheda 4.</li>
+        <li><b>Atmosfera media continentale americana.</b> Il modello usa N_s = 301. Sul Mediterraneo d'estate la rifrattività al suolo è più alta, quindi la mediana vera è probabilmente migliore.</li>
+        <li><b>Media su tutte le ore dell'anno.</b> Un contest estivo di mattina non è un campione casuale delle ore dell'anno.</li>
+      </ul>
+      <p>Fonti: K. A. Norton, «System Loss in Radio Wave Propagation», J. Res. NBS 63D, 1959 (Fig. 7 e 13); D. W. Bray K2LMG, QST, novembre 1961.</p>
+    </details>
+  </section>
+
+  <section class="sheet" id="p4" data-tab="Troposcatter" hidden>
+    <div class="head"><p class="num">4 / 8 · troposcatter</p><h2>Il volume comune</h2>
+      <p class="lead">I due fasci radenti si incrociano in quota. Lì la turbolenza dell'aria umida diffonde in avanti una frazione minuscola del segnale, a ogni ora del giorno.</p></div>
+    <div class="cols">
+      <div class="figs"><div class="fig"><svg id="v4" viewBox="0 0 720 380" role="img" aria-label="Geometria del troposcatter: fasci, volume comune e angolo di scatter"></svg></div>
+        <div class="fig"><svg id="v4z" viewBox="0 0 720 290" role="img" aria-label="Ingrandimento dei primi 12 km davanti alla stazione A con l'ostacolo che fissa l'angolo di take off"></svg></div></div>
+      <div class="side">
+        <div class="ctl"><label for="d4">Distanza tra le stazioni <output id="d4o"></output></label><input type="range" id="d4" min="200" max="800" step="10" value="500"></div>
+        <div class="ctl"><label for="a4">Angolo di take off di A <output id="a4o"></output></label><input type="range" id="a4" min="-1" max="3" step="0.1" value="0"></div>
+        <dl class="read"><dt>Angolo di scatter</dt><dd id="r4t"></dd><dt>Base del volume comune</dt><dd id="r4h"></dd><dt>Distanza equivalente</dt><dd id="r4e"></dd><dt>Effetto del take off</dt><dd class="big" id="r4p"></dd><dt>In potenza</dt><dd id="r4w" style="font-size:19px"></dd></dl>
+        <p class="take">La quota serve a liberare l'orizzonte. Per un QSO a 500 km un ostacolo che alza il take off di un grado costa quanto un lineare.</p>
+        <p class="note"><b>L'aria che lavora è quella bassa.</b> Lo scatter nasce dalle irregolarità dell'aria, forti nei primi 2–3 km, dove è umida e rimescolata. Allontanando le stazioni il volume comune sale: circa 1,3 km a 300 km, 3,7 km a 500 km, 9,4 km a 800 km. Lassù l'aria è secca e rarefatta e diffonde molto meno. Per questo la perdita cresce con la distanza, e oltre gli 800–1000 km il troposcatter si esaurisce.</p>
+        <p class="note">Take off negativo: una cima che domina la pianura o il mare. Take off positivo: colline, alberi o edifici dentro il fascio.</p>
+        <details><summary>Formula</summary><p>Angolo di scatter <code>θ = d / R_eff + α</code>, con <code>R_eff ≈ 8500 km</code>: circa 0,7° ogni 100 km. Quota del volume comune <code>≈ d² / (8 · R_eff)</code>. Effetto del take off con il metodo di Bray (QST, novembre 1961): ogni grado d'orizzonte vale 69 miglia, cioè 111 km di distanza in più o in meno, e i dB si leggono sulla curva della scheda 3. Oltre 805 km la curva è prolungata con la sua ultima pendenza.</p><details class="ex"><summary>Esempio svolto: QSO a 500 km, take off +1°</summary><ol><li>Angolo di scatter con orizzonte libero: <code>θ = 500 / 8495 = 0,0589 rad</code>.</li><li>In gradi: <code>0,0589 · 57,3 = 3,4°</code>.</li><li>Base del volume comune: <code>500² / (8 · 8495) = 250 000 / 67 960 = 3,7 km</code>.</li><li>Ostacolo che alza il take off di 1°: distanza equivalente <code>500 + 111 = 611 km</code>.</li><li>Perdita sulla curva: <code>209,9 dB</code> a 500 km, <code>218,8 dB</code> a 611 km.</li><li>Costo dell'ostacolo: <code>218,8 − 209,9 = 8,9 dB</code>, quasi un lineare.</li></ol></details></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="p5" data-tab="Budget" hidden>
+    <div class="head"><p class="num">5 / 8 · budget di collegamento</p><h2>Quanti watt servono davvero</h2>
+      <p class="lead">Quello che trasmetti (potenza e antenna, in alto) meno quello che serve a chi riceve (scheda 0) è la perdita che il collegamento può tollerare. La curva la trasforma in chilometri.</p></div>
+    <div class="cols">
+      <div class="fig"><svg id="v5" viewBox="0 0 720 420" role="img" aria-label="Soglia di stazione sulla curva di perdita di percorso"></svg></div>
+      <div class="side">
+                <div class="ctl"><span class="lab">Modo</span><div class="seg" data-key="mode" data-r="5"><button data-v="FM">FM</button><button data-v="SSB">SSB</button><button data-v="CW">CW</button><button data-v="FT8">FT8</button></div></div>
+                <dl class="read"><dt>Chi riceve</dt><dd id="r5e" style="font-size:17px"></dd><dt>Segnale minimo (scheda 0)</dt><dd id="r5t"></dd><dt>Perdita tollerata</dt><dd id="r5b"></dd><dt>QRB oltre l'orizzonte</dt><dd class="big" id="r5d"></dd></dl>
+        <div class="tw"><table><thead><tr><th>Stesso modo e antenna, altra potenza</th><th class="n">dB</th><th class="n">km</th></tr></thead><tbody id="t5"></tbody></table></div>
+        <p class="take">10 dB valgono circa 100 km. 5 W in CW arrivano quasi dove arrivano 500 W in SSB.</p>
+        <details><summary>Come è fatto il conto</summary><p><code>perdita tollerata = P(dBm) − linea TX + G_tx(dBi) + G_rx(dBi) − segnale minimo</code>. La linea in trasmissione vale 1 dB; quella in ricezione è già dentro il segnale minimo della scheda 0. Stessa antenna ai due capi. Valori mediani, senza margine di fading.</p><details class="ex"><summary>Esempio svolto: 5 W in SSB, 2×10 elementi, ambiente rurale quieto</summary><ol><li>Potenza: <code>10 · log(5000 mW) = 37,0 dBm</code>.</li><li>Linea in trasmissione: <code>−1 dB</code>.</li><li>Antenne: <code>16,2 dBd + 2,15 = 18,35 dBi</code> per parte, <code>36,7 dB</code> in due.</li><li>Segnale minimo di chi riceve, dalla scheda 0: <code>−127,0 dBm</code>.</li><li>Perdita tollerata: <code>37,0 − 1 + 36,7 + 127,0 = 199,7 dB</code>.</li><li>Sulla curva corrispondono a circa <code>430 km</code>.</li><li>Stesso conto con chi riceve in città: segnale minimo <code>−113,0 dBm</code>, perdita tollerata <code>185,7 dB</code>, circa <code>295 km</code>.</li></ol></details></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="p6" data-tab="Aerei" hidden>
+    <div class="head"><p class="num">6 / 8 · aircraft scatter</p><h2>Un aereo attraversa il path</h2>
+      <p class="lead">Un aereo di linea a 10 km di quota è visibile da entrambe le stazioni e riflette molto più del volume comune. Dura poco, ma si può prevedere.</p>
+      <p class="lead">A 144 MHz un aereo di linea è lungo 20–25 lunghezze d'onda e offre una sagoma di 150–400 m²: molto più grande di qualsiasi riflettore VHF.</p></div>
+    <div class="seg sub" data-key="sub6" data-r="6"><button data-v="a">6a · Dall'alto: un passaggio</button><button data-v="b">6b · Di profilo: chi vede l'aereo</button><button data-v="c">6c · Di profilo: la linea di vista</button></div>
+    <div id="p6b" hidden><div class="cols">
+      <div class="fig"><svg id="v6b" viewBox="0 0 720 420" role="img" aria-label="Profilo del path con quota minima visibile da ciascuna stazione, zona comune e aerei"></svg></div>
+      <div class="side">
+        <button class="play" id="pl6b">Avvia il traffico</button>
+        <div class="ctl"><label for="a6a">Take off di A <output id="a6ao"></output></label><input type="range" id="a6a" min="-1" max="6" step="0.1" value="0.5"></div>
+        <div class="ctl"><label for="a6b">Take off di B <output id="a6bo"></output></label><input type="range" id="a6b" min="-1" max="6" step="0.1" value="1"></div>
+        <div class="ctl"><label for="d6">Distanza tra le stazioni <output id="d6o"></output></label><input type="range" id="d6" min="300" max="800" step="10" value="580"></div>
+        <dl class="read"><dt>Zona comune sotto 12,2 km</dt><dd id="r6z" style="font-size:19px"></dd><dt>Quota minima utile</dt><dd class="big" id="r6m"></dd><dt>Aerei utili adesso</dt><dd id="r6n"></dd></dl>
+        <p class="take">Ogni grado di take off alza la quota minima utile. Se supera la quota di crociera, su quel path l'aircraft scatter non esiste.</p>
+        <p class="note">È la vista "Path info" di AirScout: Terra piatta e raggi incurvati (k = 4/3). Lì la curva di A è rossa, quella di B gialla e la zona comune magenta. Terreno e traffico sono simulati.</p>
+        <details><summary>Formula</summary><p>Quota minima vista da una stazione a distanza <code>x</code>: <code>h = h₀ + x · tan α + x² / (2 · R_eff)</code>. Un aereo è utile se sta sopra entrambe le curve.</p><details class="ex"><summary>Esempio svolto: take off +1°, aereo a 200 km</summary><ol><li>Termine del take off: <code>200 · tan 1° = 200 · 0,01746 = 3,49 km</code>.</li><li>Termine di curvatura: <code>200² / (2 · 8495) = 40 000 / 16 990 = 2,35 km</code>.</li><li>Quota minima visibile: <code>3,49 + 2,35 = 5,8 km</code>.</li><li>Un aereo a 10 km è visibile; uno a 5 km no.</li><li>Con take off 0° basterebbero <code>2,35 km</code>.</li></ol></details></details>
+      </div>
+    </div></div>
+    <div id="p6c" hidden><div class="cols">
+      <div class="fig"><svg id="v6c" viewBox="0 0 720 420" role="img" aria-label="Profilo del terreno con la linea di vista tra le due antenne su Terra piatta"></svg></div>
+      <div class="side">
+        <div class="ctl"><span class="lab">Scala verticale</span><div class="seg" data-key="sc6" data-r="6c"><button data-v="as">Come AirScout: sul terreno</button><button data-v="full">Completa: tutta la linea</button></div></div>
+        <div class="ctl"><label for="dc">Distanza tra le stazioni <output id="dco"></output></label><input type="range" id="dc" min="20" max="800" step="10" value="580"></div>
+        <div class="ctl"><label for="hca">Quota dell'antenna A <output id="hcao"></output></label><input type="range" id="hca" min="0" max="3000" step="50" value="300"></div>
+        <div class="ctl"><label for="hcb">Quota dell'antenna B <output id="hcbo"></output></label><input type="range" id="hcb" min="0" max="3000" step="50" value="1000"></div>
+        <dl class="read"><dt>Vista ottica</dt><dd class="big" id="r6v" style="font-size:24px"></dd><dt>Punto più basso della linea</dt><dd id="r6l"></dd><dt>Margine minimo sul terreno</dt><dd id="r6c"></dd></dl>
+        <p class="take">Se la linea nera esce dal fondo del grafico, le due stazioni non si vedono: è un path oltre l'orizzonte.</p>
+        <p class="note">È il pannello inferiore di AirScout: in verde il terreno con scala automatica, in nero la linea di vista tra le antenne. Qui il terreno è simulato e grigio. Con la Terra disegnata piatta, una retta si incurva verso il basso.</p>
+        <details><summary>Formula</summary><p>Abbassamento della linea a metà percorso: <code>d² / (8 · R_eff)</code>, con <code>R_eff ≈ 8500 km</code>. A 580 km sono circa 5 km.</p><details class="ex"><summary>Esempio svolto: path di 580 km</summary><ol><li>Quadrato della distanza: <code>580² = 336 400 km²</code>.</li><li>Denominatore: <code>8 · 8495 = 67 960 km</code>.</li><li>Abbassamento: <code>336 400 / 67 960 = 4,95 km</code>.</li><li>Con antenne a 300 e 1000 m la linea parte in media da 650 m: a metà percorso sta a <code>650 − 4950 = −4300 m</code>.</li><li>La linea passa sotto la superficie: niente vista ottica.</li></ol></details></details>
+      </div>
+    </div></div>
+    <div id="p6a"><div class="cols">
+      <div class="fig"><svg id="v6" viewBox="0 0 720 480" role="img" aria-label="Vista dall'alto del path con aereo, livello del segnale e Doppler nel tempo"></svg></div>
+      <div class="side">
+        <button class="play" id="pl6">Avvia il passaggio</button>
+        <div class="ctl"><label for="tt">Tempo dall'incrocio <output id="tto"></output></label><input type="range" id="tt" min="-240" max="240" step="1" value="0"></div>
+        <div class="ctl"><label for="phi">Angolo tra rotta e path <output id="phio"></output></label><input type="range" id="phi" min="20" max="90" step="5" value="60"></div>
+        <dl class="read"><dt>Segnale adesso</dt><dd id="r6s"></dd><dt>Doppler adesso</dt><dd id="r6d"></dd><dt>Finestra sopra soglia SSB</dt><dd class="big" id="r6w"></dd></dl>
+        <p class="take">Da +10 a +20 dB per decine di secondi, con il Doppler che scivola. Con i dati ADS-B (AirScout) lo sked si prepara in anticipo.</p>
+        <p class="note">Modello qualitativo: path di 600 km, aereo a 900 km/h, livelli indicativi.</p>
+      </div>
+    </div></div>
+  </section>
+
+  <section class="sheet" id="p7" data-tab="Condotti" hidden>
+    <div class="head"><p class="num">7 / 8 · ducting</p><h2>Quanto deve essere spesso lo strato</h2>
+      <p class="lead">Un condotto guida solo le onde abbastanza corte da starci dentro. Per i 2 metri servono strati spessi.</p></div>
+    <div class="cols">
+      <div class="fig"><svg id="v7" viewBox="0 0 720 300" role="img" aria-label="Spessore minimo del condotto per ogni banda"></svg></div>
+      <div class="side">
+        <div class="ctl"><label for="dk">Spessore dello strato <output id="dko"></output></label><input type="range" id="dk" min="0" max="100" step="1" value="26"></div>
+        <ul class="chips" id="c7"></ul>
+        <div class="fig" style="max-width:300px"><svg id="v7m" viewBox="0 0 240 210" style="min-width:0" role="img" aria-label="Profilo di rifrattività modificata M con la quota"></svg></div>
+        <p class="note"><b>Cos'è M.</b> N dice di quanto l'indice di rifrazione dell'aria supera 1, in parti per milione (scheda 2). M è N corretto per la curvatura della Terra: <code>M = N + 157 · quota (km)</code>. In aria normale M cresce con la quota (linea tratteggiata). Dove M cala (tratto arancione inclinato all'indietro) il raggio curva più della Terra: quello è lo strato che fa da condotto, in verde.</p>
+        <p class="take">Il condotto da evaporazione sul mare è troppo sottile per i 2 m. Le aperture in Adriatico nascono da avvezione o subsidenza, con strati di 100–500 m.</p>
+        <p class="note">Per restare nel condotto il raggio deve partire quasi orizzontale: al massimo mezzo grado sopra o sotto. Un raggio più inclinato buca lo strato ed esce.</p>
+        <p class="note">Conta anche la quota dell'antenna. Se lo strato parte dal suolo o dal mare, conviene stare bassi, dentro lo strato. Se lo strato è in quota, per esempio tra 500 e 1000 m, una stazione in pianura resta sotto e fatica a entrarci, mentre una stazione in montagna a quella quota ci sta dentro.</p>
+        <p class="note">Molte aperture a 144 MHz sono super-rifrazione con troposcatter rinforzato: segnali variabili e QSB profondo. Il condotto vero dà segnali forti e stabili.</p>
+        <details><summary>Formula</summary><p>Ordine di grandezza: <code>λ_max ≈ 2,5 · 10⁻³ · d^1,5</code> (metri). <code>M = N + 157 · h(km)</code>: c'è condotto dove <code>dM/dh &lt; 0</code>. Angolo critico <code>θc ≈ √(2 · ΔM · 10⁻⁶)</code> in radianti, dove ΔM è il calo di M attraverso lo strato, in unità M. Con <code>ΔM = 10</code> viene 0,26°; con <code>ΔM = 40</code> viene 0,51°.</p><details class="ex"><summary>Esempio svolto: spessore minimo per i 144 MHz</summary><ol><li>Lunghezza d'onda: <code>λ = 300 / 144 = 2,08 m</code>.</li><li>Si inverte la formula: <code>d = (λ / 2,5 · 10⁻³)^(2/3)</code>.</li><li>Rapporto: <code>2,08 / 0,0025 = 833</code>.</li><li>Radice cubica: <code>∛833 = 9,41</code>.</li><li>Quadrato: <code>9,41² = 88,5 m</code>, circa 89 m. Sotto questo spessore i 2 metri escono dallo strato.</li><li>Confronto: un condotto da evaporazione di 15 m intrappola fino a <code>λ = 0,0025 · 15^1,5 = 0,145 m</code>, cioè da circa 2 GHz in su.</li><li>Angolo critico con ΔM = 10: <code>√(2 · 10 · 10⁻⁶) = 0,00447 rad = 0,26°</code>.</li></ol></details></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="p8" data-tab="Polarizzazione" hidden>
+    <div class="head"><p class="num">8 / 8 · polarizzazione</p><h2>La polarizzazione arriva com'è partita</h2>
+      <p class="lead">Rifrazione, troposcatter e aircraft scatter conservano la polarizzazione. Nessun modo troposferico la rimescola a tuo favore.</p></div>
+    <div class="cols">
+      <div class="fig" style="padding:6px 18px"><div class="tw"><table>
+        <thead><tr><th>Modo</th><th>Polarizzazione</th><th>Discriminazione</th></tr></thead>
+        <tbody>
+          <tr><td>Rifrazione, super-rifrazione, condotto</td><td>conservata</td><td>oltre 20 dB</td></tr>
+          <tr><td>Troposcatter</td><td>conservata</td><td>20–30 dB</td></tr>
+          <tr><td>Aircraft scatter</td><td>conservata</td><td>alta</td></tr>
+          <tr><td>Rain scatter (10 GHz)</td><td>rimescolata</td><td>anche sotto 10 dB</td></tr>
+        </tbody></table></div></div>
+      <div class="side">
+        <div class="ctl"><span class="lab">Tu sei in orizzontale. Il corrispondente?</span><div class="seg" data-key="pol" data-r="8"><button data-v="H">Orizzontale</button><button data-v="V">Verticale</button></div></div>
+        <dl class="read"><dt>Perdita per polarizzazione</dt><dd class="big" id="r8l"></dd><dt>In portata</dt><dd id="r8k" style="font-size:19px"></dd></dl>
+        <p class="take">Polarizzazione incrociata: circa 20 dB persi, come scendere da 500 W a 5 W.</p>
+        <p class="note">Sul mare la polarizzazione orizzontale si accoppia un po' meglio ai condotti di superficie: cambia il livello, non la polarizzazione ricevuta.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet" id="p9" data-tab="Curiosità" hidden>
+    <div class="head"><p class="num">9 · curiosità</p><h2>Il vicino forte che alza il rumore</h2>
+      <p class="lead">Nessun oscillatore è una riga pura: ha ai lati una fascia di rumore. Con un segnale forte vicino in frequenza, quel rumore finisce dentro la tua banda passante.</p></div>
+    <div class="seg sub" data-key="sub9" data-r="9"><button data-v="a">9a · La portante vista da vicino</button><button data-v="b">9b · Il vicino forte</button></div>
+    <div id="p9a"><div class="cols">
+      <div class="fig"><svg id="v9a" viewBox="0 0 720 420" role="img" aria-label="Spettro di una portante CW con la fascia di rumore dell'oscillatore ai lati"></svg></div>
+      <div class="side">
+        <div class="ctl"><span class="lab">Oscillatore</span><div class="seg" data-key="osc" data-r="9"><button data-v="ideal">Ideale</button><button data-v="real">Reale</button></div></div>
+        <div class="ctl"><span class="lab">Potenza della portante: 0 dB vale</span><div class="seg" data-key="pc" data-r="9"><button data-v="5">5 W</button><button data-v="50">50 W</button><button data-v="500">500 W</button></div></div>
+        <div class="ctl"><label for="la9">Rumore dell'oscillatore, a 10 kHz <output id="la9o"></output></label><input type="range" id="la9" min="-150" max="-100" step="1" value="-130"></div>
+        <dl class="read stack"><dt>Rumore a 1 kHz dalla portante</dt><dd id="r9f"></dd><dt>A 10 kHz</dt><dd id="r9g"></dd><dt>A 100 kHz</dt><dd id="r9h"></dd><dt>In un canale SSB a 10 kHz</dt><dd id="r9i"></dd><dt>Portante</dt><dd id="r9j"></dd><dt>Rumore irradiato in quel canale</dt><dd class="big" id="r9k" style="font-size:26px"></dd><dt>Equivale a una portante CW da</dt><dd id="r9l"></dd><dt>Da un vicino a 20 km, antenne da 10 dBi</dt><dd id="r9m" style="font-size:19px"></dd></dl>
+        <p class="take">Una portante non è una riga sola: si porta dietro una fascia di rumore che cala allontanandosi, ma non arriva mai a zero.</p>
+        <p class="note">Per chi ascolta su quel canale, il rumore irradiato equivale a un piccolo trasmettitore CW della stessa potenza collegato alla stessa antenna: lo S-meter segna lo stesso valore. Il vicino a 20 km è in vista ottica, con le due antenne puntate una sull'altra e il rumore di fondo della scheda 0.</p>
+        <p class="note">A sinistra la scala è relativa alla portante (dBc: la «c» sta per carrier). A destra, in arancione, la stessa scala in valore assoluto per la potenza scelta. Passando da 5 a 500 W la fascia resta dov'è rispetto alla portante, ma in assoluto sale di 20 dB.</p>
+        <p class="note">La scala è in decibel rispetto alla portante, per ogni hertz di banda. Zero rumore sarebbe infinitamente in basso, fuori dal grafico: la curva si appoggia su un fondo e lì resta.</p>
+        <p class="note">Modello semplice: la fascia scende di 20 dB ogni volta che la distanza decuplica, fino a un fondo a banda larga 25 dB sotto il valore a 10 kHz.</p>
+      </div>
+    </div></div>
+    <div id="p9b" hidden><div class="cols">
+      <div class="fig"><svg id="v9" viewBox="0 0 720 420" role="img" aria-label="Rumore che un segnale forte vicino porta nella banda di ricezione, in funzione della distanza in frequenza"></svg></div>
+      <div class="side">
+        <div class="ctl"><label for="ps9">Segnale forte al tuo ricevitore <output id="ps9o"></output></label><input type="range" id="ps9" min="-90" max="-10" step="1" value="-40"></div>
+        <div class="ctl"><label for="df9">Distanza in frequenza <output id="df9o"></output></label><input type="range" id="df9" min="0" max="100" step="0.5" value="43.5"></div>
+        <div class="ctl"><label for="lr9">Rumore del tuo oscillatore, a 10 kHz <output id="lr9o"></output></label><input type="range" id="lr9" min="-150" max="-100" step="1" value="-130"></div>
+        <div class="ctl"><label for="lt9">Rumore trasmesso dal vicino, a 10 kHz <output id="lt9o"></output></label><input type="range" id="lt9" min="-150" max="-100" step="1" value="-120"></div>
+        <dl class="read"><dt>Rumore di fondo senza il vicino (scheda 0)</dt><dd id="r9a"></dd><dt>Dal tuo oscillatore (reciprocal mixing)</dt><dd id="r9b"></dd><dt>Dal trasmettitore del vicino</dt><dd id="r9c"></dd><dt>Il rumore di fondo sale di</dt><dd class="big" id="r9d"></dd><dt>In portata</dt><dd id="r9e" style="font-size:19px"></dd></dl>
+        <p class="take">Un segnale forte vicino alza il rumore in due modi: con il rumore del tuo oscillatore e con quello che lui stesso trasmette. Il secondo non si cura con un ricevitore migliore.</p>
+        <p class="note"><b>Il lineare amplifica anche il rumore.</b> Segnale e fascia di rumore escono amplificati insieme: il rapporto resta uguale, ma il rumore irradiato sale di 20 dB passando da 5 a 500 W. Un eccitatore rumoroso seguito da un lineare disturba tutta la banda attorno.</p>
+        <p class="note"><b>Perché i transverter hanno senso.</b> Un apparato HF moderno arriva a circa −150 dBc/Hz a 10 kHz, un apparato VHF moderno a circa −130 dBc/Hz, uno datato si ferma a circa −120 dBc/Hz: 20–30 dB a favore dell'HF. Un buon ricetrasmettitore HF con un transverter porta quel vantaggio sui 2 metri, purché l'oscillatore del transverter sia altrettanto pulito.</p>
+        <p class="note">Senza segnali forti vicini questi due contributi sono zero. Il rumore si calcola nella banda del modo scelto nella scheda 0.</p>
+        <details><summary>Formula</summary><p>Rumore in banda: <code>livello del segnale forte + L(Δf) + 10 · log B</code>, con L(Δf) in dBc/Hz. Qui la fascia scende di 20 dB per decade a partire dal valore a 10 kHz. Moltiplicare la frequenza di un oscillatore per N peggiora L di <code>20 · log N</code>.</p><details class="ex"><summary>Esempio svolto: vicino a S9+53, a 10 kHz, in SSB</summary><ol><li>Segnale forte: <code>−40 dBm</code>, cioè S9+53.</li><li>Banda SSB: <code>10 · log 2400 = 33,8 dB</code>.</li><li>Dal tuo oscillatore a −130 dBc/Hz: <code>−40 − 130 + 33,8 = −136,2 dBm</code>.</li><li>Dal trasmettitore del vicino a −120 dBc/Hz: <code>−40 − 120 + 33,8 = −126,2 dBm</code>.</li><li>Rumore di fondo in ambiente rurale quieto: <code>−137,0 dBm</code>.</li><li>Somma delle tre potenze: <code>−125,5 dBm</code>. Il fondo è salito di <code>11,5 dB</code>.</li><li>Con la regola dei 10 dB ogni 100 km: circa <code>110 km</code> di portata in meno finché il vicino trasmette.</li></ol></details></details>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <section class="sheet" id="pb" data-tab="Bibliografia" data-nonum="1" hidden>
+    <div class="head"><p class="num">fonti</p><h2>Da dove vengono curve e numeri</h2>
+      <p class="lead">Ogni voce indica che cosa se ne è preso e in quale scheda è usata.</p></div>
+    <div class="bib">
+      <h3>La curva di perdita e il troposcatter</h3>
+      <ol>
+        <li><p class="ref"><b>K. A. Norton</b>, «System Loss in Radio Wave Propagation», <i>Journal of Research of the National Bureau of Standards – D. Radio Propagation</i>, vol. 63D, n. 1, luglio-agosto 1959, pp. 53–73.</p>
+          <p class="use">Origine delle curve. Fig. 7: perdita mediana di troposcatter su terra liscia con antenne a 30 piedi. Fig. 13: variabilità nel tempo in funzione della distanza angolare. Schede 3, 4, 5.</p></li>
+        <li><p class="ref"><b>D. W. Bray, K2LMG</b>, «A Method for Determining V.H.F. Station Capabilities», <i>QST</i>, novembre 1961, pp. 36–41 e 162.</p>
+          <p class="use">Riduce i grafici di Norton alle bande amatoriali. Da qui la regola dei 69 miglia (111 km) per grado d'orizzonte, i 7 dB di margine per il fading e i 4 dB per antenna di riflessione dal suolo. Schede 3, 4, 5.</p></li>
+        <li><p class="ref"><b>ARRL</b>, <i>The ARRL Antenna Book for Radio Communications</i>, ed. 2023, cap. 4 «Radio Wave Propagation», Fig. 4.29.</p>
+          <p class="use">Ripubblica le curve di Bray al 50% e al 99% del tempo. La curva blu delle schede 3 e 5 è ridisegnata dal pannello A, 144 MHz.</p></li>
+        <li><p class="ref"><b>P. L. Rice, A. G. Longley, K. A. Norton</b>, «Prediction of the Cumulative Distribution with Time of Ground Wave and Tropospheric Wave Transmission Loss», citato da Norton nel 1959 come lavoro in preparazione.</p>
+          <p class="use">Norton vi rimanda per il metodo di calcolo dello scatter. È dove andrebbe cercata la causa del gradino a 400–480 km.</p></li>
+        <li><p class="ref"><b>B. R. Bean, G. D. Thayer</b>, «On Models of the Atmospheric Radio Refractive Index», <i>Proceedings of the IRE</i>, vol. 47, 1959, p. 740.</p>
+          <p class="use">Atmosfera di riferimento usata da Norton (N<sub>s</sub> = 301). Citato da Norton.</p></li>
+        <li><p class="ref"><b>ITU-R</b>, Raccomandazione P.372, «Radio noise».</p>
+          <p class="use">Rumore artificiale e galattico mediano in funzione della frequenza e dell'ambiente. Schede 0 e 5.</p></li>
+        <li><p class="ref"><b>ITU-R</b>, Raccomandazioni P.453 (rifrattività), P.617 (collegamenti oltre l'orizzonte), P.452.</p>
+          <p class="use">Soglie di rifrazione della scheda 2 e convenzione degli angoli d'orizzonte della scheda 4.</p></li>
+      </ol>
+      <h3>Diffrazione e zone di Fresnel</h3>
+      <ol start="8">
+        <li><p class="ref"><b>A. P. Barsis, R. S. Kirby</b>, «VHF and UHF Signal Characteristics Observed on a Long Knife-Edge Diffraction Path», <i>Journal of Research of the National Bureau of Standards – D. Radio Propagation</i>, vol. 65D, n. 5, settembre-ottobre 1961, pp. 437–448. <a href="https://nvlpubs.nist.gov/nistpubs/jres/65D/jresv65Dn5p437_A1b.pdf">nvlpubs.nist.gov</a></p>
+          <p class="use">Misure dietro un crinale reale confrontate con il modello a quattro raggi: dei 4–5 lobi previsti ne fu misurato uno.</p></li>
+        <li><p class="ref"><b>ARRL</b>, <i>The ARRL Handbook for Radio Communications</i>, sez. 19.1.6 «Knife-Edge Diffraction», figura HBK05_20-004.</p>
+          <p class="use">Figura del ventaglio di fasce dietro lo spigolo. Il calcolo mostra che le fasce nella zona d'ombra richiedono un secondo percorso, per esempio la riflessione dal suolo.</p></li>
+        <li><p class="ref"><b>ITU-R</b>, Raccomandazione P.526, «Propagation by diffraction». <a href="https://www.itu.int/dms_pubrec/itu-r/rec/p/R-REC-P.526-10-200702-S!!PDF-E.pdf">itu.int</a></p>
+          <p class="use">Perdita per spigolo J(ν): 6 dB a radente, 0 dB con circa il 55–60% della prima zona di Fresnel libera.</p></li>
+      </ol>
+      <h3>Strumenti</h3>
+      <ol start="11">
+        <li><p class="ref"><b>DL2ALF</b>, <i>AirScout – Aircraft Scatter Prediction</i>, documentazione V1.4.0.0, 2024. <a href="http://airscout.eu/downloads/AirScout_V1_4_0_0_EN.pdf">airscout.eu</a></p>
+          <p class="use">Significato delle curve del pannello «Path info» e valori di F1-Clearance per banda (0,2 a 144 MHz). Scheda 6.</p></li>
+      </ol>
+      <h3>Punto di partenza</h3>
+      <ol start="12">
+        <li><p class="ref"><b>S. Fabris, IU3QEZ</b>, «QRP in VHF: ma perché andiamo così lontano?», <i>GEKO Magazine</i> n. 69, Mountain QRP Club, settembre 2026.</p>
+          <p class="use">Tesi della serata: 5 W e 500 W usano gli stessi meccanismi; 10 dB valgono circa 100 km.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="foot"><button id="prev">← Precedente</button><button id="next">Successiva →</button></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), R=6371, RE=R*4/3;
+const sc=(a,b,c,d)=>v=>c+(v-a)*(d-c)/(b-a);
+const f=n=>n.toFixed(1);
+const it=(v,d=0)=>v.toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d});
+const S={k1:4/3,P:5,mode:'SSB',G:16.2,pol:'H',env:'quiet',pre:1,lrx:1,nfr:5,sub3:'a',sub6:'a',sc6:'as',sub9:'a',osc:'real',pc:500};
+const pathOf=(fn,a,b,st)=>{let p='';for(let x=a;x<=b+1e-9;x+=st){const q=fn(x);p+=(p?'L':'M')+f(q[0])+','+f(q[1])+' '}return p};
+
+/* ---------- curva di path loss (ARRL Antenna Book, Fig. 4.29A, 144 MHz, 50%) ---------- */
+const PL=[[8,120],[20,140],[58,160],[80,166],[120,173],[160,176.5],[240,181.5],[320,187.5],[400,194.5],[440,201],[480,207.5],[510,211],[560,215.5],[600,218],[640,221],[725,229],[805,235]];
+function pchip(P){const n=P.length,h=[],d=[],m=[];
+  for(let i=0;i<n-1;i++){h[i]=P[i+1][0]-P[i][0];d[i]=(P[i+1][1]-P[i][1])/h[i]}
+  m[0]=d[0];m[n-1]=d[n-2];
+  for(let i=1;i<n-1;i++){const w1=2*h[i]+h[i-1],w2=h[i]+2*h[i-1];m[i]=(w1+w2)/(w1/d[i-1]+w2/d[i])}
+  return x=>{x=Math.max(P[0][0],Math.min(P[n-1][0],x));let i=0;while(i<n-2&&x>P[i+1][0])i++;
+    const t=(x-P[i][0])/h[i],t2=t*t,t3=t2*t;
+    return (2*t3-3*t2+1)*P[i][1]+(t3-2*t2+t)*h[i]*m[i]+(3*t2-2*t3)*P[i+1][1]+(t3-t2)*h[i]*m[i+1]}}
+const loss=pchip(PL);
+const fsl=d=>75.62+20*Math.log10(d);
+function rangeFor(L){if(L<=120)return 8;if(L>=235)return Infinity;let a=8,b=805;for(let i=0;i<40;i++){const m=(a+b)/2;loss(m)<L?a=m:b=m}return (a+b)/2}
+function plBase(id){const X=sc(0,820,58,706),Y=sc(110,240,372,18);let s=`<defs><clipPath id="cp${id}"><rect x="58" y="18" width="648" height="354"/></clipPath></defs>`;
+  for(let d=0;d<=800;d+=100)s+=`<line class="grid" x1="${f(X(d))}" y1="18" x2="${f(X(d))}" y2="372"/><text x="${f(X(d))}" y="390" text-anchor="middle" class="mono">${d}</text>`;
+  for(let L=120;L<=240;L+=20)s+=`<line class="grid" x1="58" y1="${f(Y(L))}" x2="706" y2="${f(Y(L))}"/><text x="50" y="${f(Y(L)+4)}" text-anchor="end" class="mono">${L}</text>`;
+  s+=`<text x="382" y="412" text-anchor="middle">distanza (km)</text><text transform="translate(15,195) rotate(-90)" text-anchor="middle">perdita di percorso (dB)</text>`;
+  const curve=`<path class="curve" clip-path="url(#cp${id})" d="${pathOf(d=>[X(d),Y(loss(d))],8,805,3)}"/>`;
+  return {X,Y,s,curve}}
+const sStr=p=>{if(p>=-93){const o=Math.round(p+93);return o<1?'S9':'S9+'+o+' dB'}return 'S'+Math.max(0,Math.round(9+(p+93)/6))};
+const sPct=p=>Math.max(2,Math.min(100,(p+141)/108*100));
+
+/* ---------- 1 orizzonte ---------- */
+function r1(){const h1=+$('#h1').value,h2=+$('#h2').value,kR=S.k1*R;
+  const d1=Math.sqrt(2*kR*h1/1000),d2=Math.sqrt(2*kR*h2/1000);
+  const X=sc(-250,250,40,680),Y=sc(600,-3400,30,340),g=x=>-x*x/(2*kR)*1000;
+  let s=`<path class="earth" d="${pathOf(x=>[X(x),Y(g(x))],-250,250,5)}L680,360 L40,360Z"/>`;
+  const mt=(xc)=>`<path class="mt" d="M${f(X(xc-16))},${f(Y(g(xc-16)))} L${f(X(xc))},${f(Y(0))} L${f(X(xc+16))},${f(Y(g(xc+16)))}Z"/>`;
+  s+=mt(-d1)+mt(d2);
+  s+=`<line class="ray" x1="${f(X(-d1))}" y1="${f(Y(0))}" x2="${f(X(d2))}" y2="${f(Y(0))}"/>`;
+  s+=`<circle class="dot" cx="${f(X(-d1))}" cy="${f(Y(0))}" r="6"/><circle class="dot" cx="${f(X(d2))}" cy="${f(Y(0))}" r="6"/>`;
+  s+=`<circle class="dotb" cx="${f(X(0))}" cy="${f(Y(0))}" r="4"/><text x="${f(X(0))}" y="${f(Y(0)+24)}" text-anchor="middle">punto radente</text>`;
+  s+=`<text class="ink b" x="${f(X(-d1))}" y="${f(Y(0)-34)}" text-anchor="middle">A</text><text class="mono" x="${f(X(-d1))}" y="${f(Y(0)-16)}" text-anchor="middle">${h1} m</text>`;
+  s+=`<text class="ink b" x="${f(X(d2))}" y="${f(Y(0)-34)}" text-anchor="middle">B</text><text class="mono" x="${f(X(d2))}" y="${f(Y(0)-16)}" text-anchor="middle">${h2} m</text>`;
+  if(d1>40)s+=`<text class="hot mono b" x="${f(X(-d1/2))}" y="${f(Y(0)-8)}" text-anchor="middle">${it(d1)} km</text>`;
+  if(d2>40)s+=`<text class="hot mono b" x="${f(X(d2/2))}" y="${f(Y(0)-8)}" text-anchor="middle">${it(d2)} km</text>`;
+  s+=`<text x="50" y="350" class="ink">Terra${S.k1>1?' equivalente (k = 4/3)':''}</text>`;
+  $('#v1').innerHTML=s;$('#h1o').textContent=h1+' m';$('#h2o').textContent=h2+' m';
+  $('#r1a').textContent=it(d1)+' km';$('#r1b').textContent=it(d2)+' km';$('#r1t').textContent=it(d1+d2)+' km'}
+
+/* ---------- 2 rifrazione ---------- */
+function rayH(x,inv,h0){if(inv>1e-9){const dh=Math.sqrt(2*h0/inv);return (x-dh)*(x-dh)*inv/2}
+  if(inv>-1e-9)return h0;const a=-inv,x0=Math.sqrt(2*h0/a),u=x%(2*x0),w=u<x0?u:2*x0-u;return h0-a*w*w/2}
+function r2(){const dn=+$('#dn').value,inv=1/R+dn*1e-6,h0=1;
+  const X=sc(0,350,50,700),Y=sc(4,-10.5,20,350),g=x=>-x*x/(2*R);
+  let s=`<path class="earth" d="${pathOf(x=>[X(x),Y(g(x))],0,350,5)}L700,380 L50,380Z"/>`;
+  for(let x=100;x<=300;x+=100)s+=`<text class="ink mono" x="${f(X(x))}" y="${f(Y(g(x))+20)}" text-anchor="middle">${x} km</text>`;
+  s+=`<path class="mt" d="M${f(X(0))},${f(Y(0))} L${f(X(0))},${f(Y(h0))} L${f(X(18))},${f(Y(g(18)))}Z"/>`;
+  s+=`<path class="ray2" d="${pathOf(x=>[X(x),Y(g(x)+rayH(x,1/R,h0))],0,350,5)}"/>`;
+  s+=`<path class="ray" d="${pathOf(x=>[X(x),Y(g(x)+rayH(x,inv,h0))],0,350,2)}"/>`;
+  s+=`<circle class="dot" cx="${f(X(0))}" cy="${f(Y(h0))}" r="6"/><text class="ink b" x="${f(X(0)+12)}" y="${f(Y(h0)-10)}">1000 m</text>`;
+  s+=`<text x="${f(X(345))}" y="${f(Y(g(345)+rayH(345,1/R,h0))-12)}" text-anchor="end">senza atmosfera</text>`;
+  let hz,q,k;const kk=1/(R*inv);
+  if(inv>1e-9){const dh=Math.sqrt(2*h0/inv);hz=dh>2000?'oltre 2000 km':it(dh)+' km';
+    if(dh<=350)s+=`<circle class="dotb" cx="${f(X(dh))}" cy="${f(Y(g(dh)))}" r="5"/>`;
+    const hq=rayH(300,inv,h0);q=dh>=300?'non ancora risalito':it(hq*1000)+' m';k=kk>50?'molto grande':it(kk,2)}
+  else{hz='ducting';q='sotto i 1000 m';k=inv>-1e-9?'∞':'negativo'}
+  if(Math.abs(R*inv)<0.02&&inv>0)k='→ ∞';
+  const reg=dn>0?'sub-rifrazione':dn>-79?(dn===-40?'aria standard':'normale'):dn>-157?'super-rifrazione':'condotto';
+  $('#v2').innerHTML=s;$('#dno').textContent=(dn>0?'+':'')+dn+' N/km';
+  $('#r2r').textContent=reg;$('#r2k').textContent=k;$('#r2h').textContent=hz;$('#r2q').textContent=q}
+
+/* ---------- 3 il muro ---------- */
+function r3a(){const d=Math.round(20*Math.pow(13,+$('#da').value/100)),X=sc(0,270,70,650),cy=170,hw=x=>x/270*128,k3=.3;
+  const arc=(x,h,front)=>`M${f(x)},${f(cy-h)} A${f(h*k3)},${f(h)} 0 0 ${front?1:0} ${f(x)},${f(cy+h)}`,xe=X(270),he=hw(270);
+  let s=`<defs><linearGradient id="cone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sig)" stop-opacity=".30"/><stop offset=".35" style="stop-color:var(--sig)" stop-opacity=".07"/><stop offset=".7" style="stop-color:var(--sig)" stop-opacity=".16"/><stop offset="1" style="stop-color:var(--sig)" stop-opacity=".34"/></linearGradient></defs>`;
+  s+=`<path fill="url(#cone)" stroke="none" d="M70,${cy} L${f(xe)},${f(cy-he)} A${f(he*k3)},${f(he)} 0 0 1 ${f(xe)},${f(cy+he)}Z"/>`;
+  s+=`<path class="thin" d="M70,${cy} L${f(xe)},${f(cy-he)} M70,${cy} L${f(xe)},${f(cy+he)}"/><path class="thin" d="${arc(xe,he,true)}"/><path class="thin" stroke-dasharray="3 4" d="${arc(xe,he,false)}"/>`;
+  s+=`<line class="grid" stroke-dasharray="3 5" x1="70" y1="${cy}" x2="${f(xe+he*k3)}" y2="${cy}"/>`;
+  [20,40,80,160].forEach((m,i)=>{const x=X(m),h=hw(m);
+    s+=`<path class="thin" stroke-dasharray="3 4" d="${arc(x,h,false)}"/><path class="thin" style="stroke-width:1.8" d="${arc(x,h,true)}"/><text class="ink b" x="${f(x)}" y="${f(cy-h-9)}" text-anchor="middle">×${Math.pow(4,i)}</text>`;
+    s+=`<text class="mono" style="font-size:12px" x="${f(x)}" y="${f(cy+h+17)}" text-anchor="middle">${m} km</text><text class="mono" style="font-size:12px" x="${f(x)}" y="${f(cy+h+32)}" text-anchor="middle">${i?'−'+6*i:'0'} dB</text>`});
+  const x=X(d),h=hw(d);
+  s+=`<ellipse cx="${f(x)}" cy="${cy}" rx="${f(h*k3)}" ry="${f(h)}" style="fill:var(--sig);fill-opacity:.2;stroke:var(--sig);stroke-width:3"/>`;
+  s+=`<path class="dotb" d="M${f(x-4)},${cy-8} L${f(x+4)},${cy-11} L${f(x+4)},${cy+8} L${f(x-4)},${cy+11}Z"/><text class="tb b" x="${f(x+h*k3+8)}" y="${cy+5}">RX</text>`;
+  s+=`<circle class="dot" cx="70" cy="${cy}" r="7"/><text class="ink b" x="70" y="${cy-14}" text-anchor="middle">TX</text>`;
+  s+=`<text x="84" y="22">sopra ogni sezione: area illuminata rispetto a 20 km · sotto: segnale ricevuto</text><text class="tb" x="84" y="330">il riquadro blu è l'antenna ricevente: cattura sempre la stessa area del disco</text>`;
+  const k=(d/20)*(d/20),dB=20*Math.log10(d/20),F=fsl(d),pr=10*Math.log10(S.P*1000)+2*(S.G+2.15)-2-F;
+  $('#v3a').innerHTML=s;$('#dao').textContent=d+' km';$('#m3c').textContent=sStr(pr);$('#b3c').style.width=sPct(pr)+'%';
+  $('#r3a1').textContent='×'+it(k,k<10?1:0);$('#r3a2').textContent=(dB<.05?'0':'−'+it(dB,1))+' dB';$('#r3a3').textContent=it(dB/6,1);$('#r3a4').textContent=it(F)+' dB'}
+function r3(){$('#p3a').hidden=S.sub3!=='a';$('#p3b').hidden=S.sub3!=='b';r3a();const d=+$('#d3').value,{X,Y,s:base,curve}=plBase(3);let s='';
+  [[0,150,'diluizione e orizzonte'],[150,400,'troposcatter: pendenza dolce'],[400,480,'gradino'],[480,820,'ancora troposcatter']].forEach((z,i)=>{
+    if(i%2===0)s+=`<rect class="zone" x="${f(X(z[0]))}" y="18" width="${f(X(z[1])-X(z[0]))}" height="354"/>`;
+    s+=`<text x="${f((X(z[0])+X(z[1]))/2)}" y="34" text-anchor="middle" class="ink">${z[2]}</text>`});
+  s+=base+curve;
+  const L=loss(d);
+  s+=`<line class="thin" stroke-dasharray="4 4" x1="${f(X(d))}" y1="18" x2="${f(X(d))}" y2="372"/>`;
+  s+=`<circle class="dot" cx="${f(X(d))}" cy="${f(Y(L))}" r="7"/>`;
+  const tx=d>640?X(d)-10:X(d)+10,an=d>640?'end':'start';
+  s+=`<text class="hot mono b" x="${f(tx)}" y="${f(Y(L)+22)}" text-anchor="${an}" style="font-size:16px">${it(L)} dB</text>`;
+  $('#v3').innerHTML=s;$('#d3o').textContent=d+' km';
+  const pb=10*Math.log10(S.P*1000)+2*(S.G+2.15)-2-L;$('#m3b').textContent=sStr(pb);
+  $('#b3b').style.width=sPct(pb)+'%';
+  $('#r3l').textContent=it(L)+' dB';
+  const a=Math.max(8,d-25),b=Math.min(805,d+25);$('#r3s').innerHTML=it((loss(b)-loss(a))/(b-a)*100)+' <small>dB / 100 km</small>'}
+
+/* ---------- 4 troposcatter ---------- */
+function r4(){const d=+$('#d4').value,ad=+$('#a4').value,al=ad*Math.PI/180,bw=1.5*Math.PI/180;
+  const X=sc(-470,470,20,700),Y=sc(-13,24,360,20),g=x=>-x*x/(2*RE);
+  const xa=-d/2,xb=d/2,ya=g(xa)+(al<0?RE*al*al/2:0),yb=g(xb);
+  const sAl=d/(2*RE)+Math.tan(al),sAu=sAl+Math.tan(bw),sBl=-d/(2*RE),sBu=sBl-Math.tan(bw);
+  const ix=(sa,sb)=>{const x=(yb-ya+sa*xa-sb*xb)/(sa-sb);return [x,ya+sa*(x-xa)]};
+  const pt=p=>f(X(p[0]))+','+f(Y(p[1]));
+  let s=`<path class="grid" stroke-dasharray="3 5" d="${pathOf(x=>[X(x),Y(g(x)+10)],-470,470,10)}"/><line class="grid" stroke-dasharray="3 5" x1="30" y1="34" x2="58" y2="34"/><text x="64" y="38">10 km: quota di crociera degli aerei</text>`;
+  s+=`<path class="beam" d="M${pt([xa,ya])} L${pt([470,ya+sAl*(470-xa)])} L${pt([470,ya+sAu*(470-xa)])}Z"/>`;
+  s+=`<path class="beam" d="M${pt([xb,yb])} L${pt([-470,yb+sBl*(-470-xb)])} L${pt([-470,yb+sBu*(-470-xb)])}Z"/>`;
+  const p1=ix(sAl,sBl),p2=ix(sAu,sBl),p3=ix(sAu,sBu),p4=ix(sAl,sBu);
+  s+=`<path class="vol" d="M${pt(p1)} L${pt(p2)} L${pt(p3)} L${pt(p4)}Z"/>`;
+  s+=`<line class="ray" x1="${f(X(xa))}" y1="${f(Y(ya))}" x2="${pt(p1).split(',')[0]}" y2="${pt(p1).split(',')[1]}"/><line class="ray" x1="${f(X(xb))}" y1="${f(Y(yb))}" x2="${pt(p1).split(',')[0]}" y2="${pt(p1).split(',')[1]}"/>`;
+  s+=`<path class="earth" d="${pathOf(x=>[X(x),Y(g(x))],-470,470,10)}L700,380 L20,380Z"/>`;
+  if(al<0)s+=`<path class="mt" d="M${pt([xa-30,g(xa-30)])} L${pt([xa,ya])} L${pt([xa+30,g(xa+30)])}Z"/>`;
+  if(al>0){const xo=xa+25,yo=ya+sAl*25;s+=`<path class="mt" d="M${pt([xo-14,g(xo-14)])} L${pt([xo,yo])} L${pt([xo+14,g(xo+14)])}Z"/><text class="ink" x="${f(X(xo))}" y="${f(Y(g(xo))+18)}" text-anchor="middle">ostacolo</text>`}
+  s+=`<circle class="dot" cx="${f(X(xa))}" cy="${f(Y(ya))}" r="6"/><circle class="dot" cx="${f(X(xb))}" cy="${f(Y(yb))}" r="6"/>`;
+  s+=`<text class="ink b" x="${f(X(xa))}" y="${f(Y(g(xa))+34)}" text-anchor="middle">A</text><text class="ink b" x="${f(X(xb))}" y="${f(Y(yb)+34)}" text-anchor="middle">B</text>`;
+  const th=(sAl-sBl)*180/Math.PI,H=p1[1]-g(p1[0]);
+  s+=`<text class="hot b" x="${f(X(p1[0]))}" y="${f(Math.max(30,Y(p3[1])-10))}" text-anchor="middle">volume comune</text>`;
+  $('#v4').innerHTML=s;$('#d4o').textContent=d+' km';$('#a4o').textContent=(ad>0?'+':'')+it(ad,1)+'°';
+  $('#r4t').textContent=it(th,1)+'°';$('#r4h').textContent=it(H,1)+' km';
+  r4z(ad);
+  const lx=x=>x>805?235+(x-805)*.075:loss(x),de=d+111*ad,dB=lx(d)-lx(de),z=Math.abs(ad)<.05;
+  $('#r4e').textContent=it(de)+' km';$('#r4p').textContent=z?'0 dB':(dB>0?'+':'−')+it(Math.abs(dB))+' dB';
+  const k=Math.pow(10,Math.abs(dB)/10);$('#r4w').textContent=z?'orizzonte libero a 0°':'come '+(dB>0?'moltiplicare':'dividere')+' la potenza per '+it(k,k<10?1:0)}
+
+function r4z(ad){const ta=Math.tan(ad*Math.PI/180),X=sc(0,12,70,700),Y=sc(-270,360,262,24),gy=-12;
+  const ground=x=>ad<0?Math.max(-255,gy+ta*x*1150):gy, ray=x=>ta*x*1000;
+  let s=`<path class="earth" d="${pathOf(x=>[X(x),Y(ground(x))],0,12,.25)}L700,290 L70,290Z"/>`;
+  if(ad>0){const top=ray(5);s+=`<path class="mt" d="M${f(X(3.3))},${f(Y(gy))} Q${f(X(5))},${f(Y(2*top-gy))} ${f(X(6.7))},${f(Y(gy))}Z"/>`;
+    s+=`<text class="ink b" x="${f(X(5))}" y="${f(Y(gy)+18)}" text-anchor="middle">ostacolo a 5 km</text>`}
+  if(ad<0)s+=`<text class="ink b" x="${f(X(6))}" y="${f(Y(ground(6))+22)}" text-anchor="middle">il terreno scende davanti alla cima</text>`;
+  s+=`<line class="ray2" x1="70" y1="${f(Y(0))}" x2="700" y2="${f(Y(0))}"/><text x="696" y="${f(Y(0)+(ad>0?16:-7))}" text-anchor="end">0°: orizzontale</text>`;
+  s+=`<line class="ray" x1="70" y1="${f(Y(0))}" x2="700" y2="${f(Y(ray(12)))}"/>`;
+  if(Math.abs(ad)>=.05)[1,5,10].forEach(x=>{const h=ray(x),yy=Y(h);if(yy<40)return;
+    s+=`<circle class="dot" cx="${f(X(x))}" cy="${f(yy)}" r="4"/><text class="hot mono b" x="${f(X(x))}" y="${f(yy+(ad>0?-10:-10))}" text-anchor="middle">${h>0?'+':'−'}${it(Math.abs(h))} m</text>`});
+  s+=`<line class="thin" style="stroke-width:3" x1="70" y1="${f(Y(gy))}" x2="70" y2="${f(Y(0))}"/><circle class="dot" cx="70" cy="${f(Y(0))}" r="6"/><text class="ink b" x="58" y="${f(Y(0)+5)}" text-anchor="end">A</text>`;
+  for(let x=0;x<=12;x+=2)s+=`<text class="ink mono" x="${f(X(x))}" y="282" text-anchor="middle">${x} km</text>`;
+  s+=`<text class="hot b" style="font-size:17px" x="84" y="26">take off ${ad>0?'+':ad<0?'−':''}${it(Math.abs(ad),1)}°</text><text x="696" y="26" text-anchor="end">primi 12 km davanti ad A · quote rispetto all'antenna · verticale esagerata</text>`;
+  $('#v4z').innerHTML=s}
+
+/* ---------- 5 budget ---------- */
+const ENV={city:[76.8,27.7,'città'],res:[72.5,27.7,'residenziale'],rur:[67.2,27.7,'rurale'],quiet:[53.6,28.6,'rurale quieto'],ideal:null};
+const MODES={CW:[500,0],SSB:[2400,10],FM:[12000,17],FT8:[2500,-21]};
+function noise(){const lf=Math.log10(144),gal=Math.pow(10,(52-23*lf)/10),e=ENV[S.env],fa=e?Math.pow(10,(e[0]-e[1]*lf)/10)+gal:1;
+  const L=Math.pow(10,S.lrx/10),Fr=Math.pow(10,S.nfr/10),fs=S.pre?Math.pow(10,.08)+(L*Fr-1)/100:L*Fr,f=fa+fs-1;
+  return {fa,fs,f,Fa:10*Math.log10(fa),Fs:10*Math.log10(fs),F:10*Math.log10(f)}}
+const thr=()=>{const m=MODES[S.mode];return -174+noise().F+10*Math.log10(m[0])+m[1]};
+const budget=P=>10*Math.log10(P*1000)-1+2*(S.G+2.15)-thr();
+function r0(){S.lrx=+$('#lrx').value;S.nfr=+$('#nfr').value;const n=noise(),m=MODES[S.mode],ktb=-174+10*Math.log10(m[0]),fl=ktb+n.F,t=fl+m[1];
+  const bx=[[40,'Antenna','rumore esterno',it(n.Fa,1)+' dB',1],[215,'Preampli da palo',S.pre?'NF 0,8 dB':'assente',S.pre?'+20 dB':'',S.pre],[390,'Linea','perdita','−'+it(S.lrx,1)+' dB',1],[565,'Ricevitore','cifra di rumore',it(S.nfr,1)+' dB',1]];
+  let s='';bx.forEach((b,i)=>{s+=`<rect class="grid" ${b[4]?'':'stroke-dasharray="4 4"'} x="${b[0]}" y="26" width="120" height="78" rx="4"/><text class="ink b" x="${b[0]+60}" y="48" text-anchor="middle">${b[1]}</text><text x="${b[0]+60}" y="68" text-anchor="middle">${b[2]}</text><text class="mono ink" x="${b[0]+60}" y="90" text-anchor="middle">${b[3]}</text>`;
+    if(i<3)s+=`<path class="thin" d="M${b[0]+124},65 L${b[0]+171},65 M${b[0]+164},60 L${b[0]+171},65 L${b[0]+164},70"/>`});
+  const X=sc(-165,-95,215,690),rows=[['termico ideale, kTB',ktb,'b1'],['solo catena di ricezione',ktb+n.Fs,'b2'],['solo rumore esterno',ktb+n.Fa,'b3'],['rumore totale, in radio',fl,'b4'],['segnale minimo in '+S.mode,t,'b5']];
+  for(let v=-160;v<=-100;v+=10)s+=`<line class="grid" x1="${f(X(v))}" y1="150" x2="${f(X(v))}" y2="385"/><text class="mono" x="${f(X(v))}" y="403" text-anchor="middle">${v}</text>`;
+  s+=`<text x="452" y="424" text-anchor="middle">livello in ${m[0]>=1000?it(m[0]/1000,1)+' kHz':m[0]+' Hz'} di banda (dBm)</text>`;
+  rows.forEach((r,i)=>{const y=162+i*46,x=Math.max(216,Math.min(690,X(r[1])));s+=`<text class="ink${i>2?' b':''}" x="205" y="${y+17}" text-anchor="end">${r[0]}</text><rect class="${r[2]}" x="215" y="${y}" width="${f(x-215)}" height="24"/><text class="mono ink b" x="${f(Math.min(x+8,612))}" y="${y+17}">${it(r[1],1).replace('-','−')} dBm</text>`});
+  $('#v0').innerHTML=s;$('#lrxo').textContent=it(S.lrx,1)+' dB';$('#nfro').textContent=it(S.nfr,1)+' dB';
+  $('#r0a').textContent=it(n.Fa,1)+' dB';$('#r0b').textContent=it(n.Fs,1)+' dB';$('#r0c').textContent=it(fl,1).replace('-','−')+' dBm';$('#r0d').textContent=it(t,1).replace('-','−')+' dBm';
+  $('#r0e').textContent=n.fa>n.fs-1?(n.fa>3*(n.fs-1)?'il rumore esterno':'il rumore esterno, di poco'):(n.fs-1>3*n.fa?'il ricevitore':'il ricevitore, di poco')}
+const kmStr=q=>q===Infinity?'oltre 800 km':q<=8?'meno di 10 km':it(Math.round(q/5)*5)+' km';
+function r5(){const {X,Y,s:base,curve}=plBase(5),B=budget(S.P),q=rangeFor(B);let s=base+curve;
+  const yb=Math.max(18,Math.min(372,Y(B))),xq=q===Infinity?706:X(q);
+  s+=`<path class="ray" d="M58,${f(yb)} L${f(xq)},${f(yb)}${q===Infinity?'':` L${f(xq)},372`}"/>`;
+  if(q!==Infinity)s+=`<circle class="dot" cx="${f(xq)}" cy="${f(yb)}" r="7"/><text class="hot mono b" style="font-size:16px" x="${f(Math.min(xq+10,640))}" y="364">${kmStr(q)}</text>`;
+  s+=`<text class="hot b" x="66" y="${f(yb<40?yb+18:yb-8)}">${S.P} W · ${S.mode} · ${it(S.G,1)} dBd${B>240?' (soglia oltre il grafico)':''}</text>`;
+  $('#v5').innerHTML=s;$('#r5b').textContent=it(B)+' dB';$('#r5t').textContent=it(thr(),1).replace('-','−')+' dBm';$('#r5e').textContent=(ENV[S.env]?ENV[S.env][2]:'solo termico')+(S.pre?', con preampli':', senza preampli');$('#r5d').textContent=kmStr(q);
+  $('#t5').innerHTML=[...new Set([5,50,500,S.P])].sort((a,b)=>a-b).map(P=>`<tr${P===S.P?' class="on"':''}><td>${P} W</td><td class="n">${it(budget(P))}</td><td class="n">${kmStr(rangeFor(budget(P))).replace(' km','')}</td></tr>`).join('')}
+
+/* ---------- 6 aircraft scatter ---------- */
+let playing=false,last=0;
+let pb=false,lastb=0,tb=0;
+const AC=[[.05,11.3,.23],[.3,6.5,.12],[.55,10.4,-.21],[.7,11.9,.25],[.85,9.2,-.18],[.45,12,.24],[.15,8,-.15]];
+function r6b(){const d=+$('#d6').value,aA=+$('#a6a').value,aB=+$('#a6b').value,tA=Math.tan(aA*Math.PI/180),tB=Math.tan(aB*Math.PI/180),MAX=12.2;
+  const hA0=aA<0?RE*tA*tA/2:0,hB0=aB<0?RE*tB*tB/2:0,hA=x=>hA0+x*tA+x*x/(2*RE),hB=x=>hB0+(d-x)*tB+(d-x)*(d-x)/(2*RE);
+  const X=sc(0,d,50,700),Y=sc(0,14,372,22),pw=(v,e)=>Math.pow(Math.max(0,v),e);
+  const ter=x=>{const u=x/d,b=u>.3&&u<.7?Math.pow(Math.sin(Math.PI*(u-.3)/.4),2):0;
+    let t=120+90*Math.sin(x/23)+60*Math.sin(x/7.3+2)+1500*b*(.55+.25*Math.sin(x/9)+.2*Math.sin(x/3.7+1));
+    t=Math.max(0,Math.min(t,800*Math.min(hA(x),hB(x))));
+    if(aA>0)t=Math.max(t,1000*hA(20)*pw(1-Math.abs(x-20)/9,1.2));if(aB>0)t=Math.max(t,1000*hB(d-20)*pw(1-Math.abs(d-20-x)/9,1.2));
+    if(aA<0)t=Math.max(t,1000*hA0*pw(1-x/12,1.3));if(aB<0)t=Math.max(t,1000*hB0*pw(1-(d-x)/12,1.3));return t/1000};
+  let s=`<defs><clipPath id="cp6"><rect x="50" y="22" width="650" height="350"/></clipPath></defs>`;
+  [0,4,8,12].forEach(v=>s+=`<line class="grid" x1="50" y1="${f(Y(v))}" x2="700" y2="${f(Y(v))}"/><text class="mono" x="44" y="${f(Y(v)+4)}" text-anchor="end">${v}</text>`);
+  for(let x=0;x<=d;x+=100)s+=`<text class="mono" x="${f(X(x))}" y="390" text-anchor="middle">${x}</text>`;
+  s+=`<text x="375" y="412" text-anchor="middle">distanza da A (km)</text><text transform="translate(14,197) rotate(-90)" text-anchor="middle">quota (km)</text>`;
+  let x1=null,x2=null,mn=99,xm=0,top='',bot='';
+  for(let i=0;i<=240;i++){const x=d*i/240,lo=Math.max(hA(x),hB(x));if(lo<mn){mn=lo;xm=x}if(lo<MAX){if(x1===null)x1=x;x2=x;top+=`${f(X(x))},${f(Y(MAX))} `;bot=`${f(X(x))},${f(Y(lo))} `+bot}}
+  if(x1!==null)s+=`<polygon class="okz" style="fill-opacity:.28" points="${top}${bot}"/>`;
+  s+=`<path class="earth" d="${pathOf(x=>[X(x),Y(ter(x))],0,d,d/300)}L700,372 L50,372Z"/>`;
+  s+=`<line class="thin" stroke-dasharray="2 5" x1="50" y1="${f(Y(MAX))}" x2="700" y2="${f(Y(MAX))}"/>`;
+  s+=`<g clip-path="url(#cp6)"><path class="ray" d="${pathOf(x=>[X(x),Y(hA(x))],0,d,d/200)}"/><path class="curve" d="${pathOf(x=>[X(x),Y(hB(x))],0,d,d/200)}"/></g>`;
+  if(x1!==null&&X(x2)-X(x1)>90)s+=`<text class="okc b" x="${f(X(xm))}" y="${f(Y(MAX)+20)}" text-anchor="middle">zona comune</text>`;
+  if(x1===null)s+=`<text class="hot b" style="font-size:16px" x="375" y="${f(Y(MAX)+26)}" text-anchor="middle">nessuna zona comune sotto 12,2 km</text>`;
+  let n=0;AC.forEach(a=>{const x=((a[0]*d+a[2]*tb)%d+d)%d,ok=a[1]>hA(x)&&a[1]>hB(x)&&a[1]<=MAX;if(ok)n++;
+    if(ok)s+=`<path class="okl" style="stroke-width:1.2;stroke-dasharray:4 4" d="M${f(X(0))},${f(Y(hA0))} L${f(X(x))},${f(Y(a[1]))} L${f(X(d))},${f(Y(hB0))}"/>`;
+    s+=`<path class="${ok?'dotb':'mt'}" ${ok?'style="fill:var(--ok)"':''} transform="translate(${f(X(x))},${f(Y(a[1]))}) scale(${a[2]>0?1:-1},1)" d="M${ok?12:9},0 L-${ok?9:7},${ok?7:5} L-4,0 L-${ok?9:7},-${ok?7:5}Z"/>`});
+  s+=`<circle class="dot" cx="50" cy="${f(Y(hA0))}" r="6"/><circle class="dotb" cx="700" cy="${f(Y(hB0))}" r="6"/>`;
+  s+=`<text class="hot b" x="58" y="16">A · quota minima vista da A</text><text class="tb b" x="692" y="16" text-anchor="end">quota minima vista da B · B</text><text x="375" y="${f(Y(MAX)-6)}" text-anchor="middle">quota massima degli aerei: 12,2 km</text>`;
+  $('#v6b').innerHTML=s;const sg=v=>(v>0?'+':v<0?'−':'')+it(Math.abs(v),1)+'°';
+  $('#a6ao').textContent=sg(aA);$('#a6bo').textContent=sg(aB);$('#d6o').textContent=d+' km';
+  $('#r6z').textContent=x1===null?'nessuna':'da '+it(x1)+' a '+it(x2)+' km da A';$('#r6m').textContent=it(mn,1)+' km';$('#r6n').textContent=n+' su '+AC.length}
+function tickb(ts){if(!pb)return;const dt=Math.min(.1,(ts-lastb)/1000);lastb=ts;tb+=dt*60;r6b();requestAnimationFrame(tickb)}
+function setPb(on){pb=on;$('#pl6b').textContent=on?'Pausa':'Avvia il traffico';if(on){lastb=performance.now();requestAnimationFrame(tickb)}}
+function r6c(){const d=+$('#dc').value,full=S.sc6==='full',M=1500*Math.min(1,d/200),pk=Math.min(12,d/6),pw=(v,e)=>Math.pow(Math.max(0,v),e);
+  const t0=x=>{const u=x/d,b=u>.3&&u<.7?Math.pow(Math.sin(Math.PI*(u-.3)/.4),2):0;return 120+90*Math.sin(x/23)+60*Math.sin(x/7.3+2)+M*b*(.55+.25*Math.sin(x/9)+.2*Math.sin(x/3.7+1))};
+  const HA=Math.max(+$('#hca').value,t0(0)+10),HB=Math.max(+$('#hcb').value,t0(d)+10);
+  const ter=x=>Math.max(t0(x),HA*pw(1-x/pk,1.3),HB*pw(1-(d-x)/pk,1.3)),los=x=>HA+(HB-HA)*x/d-x*(d-x)/(2*RE)*1000;
+  let mL=1e9,mC=1e9,mT=0;for(let i=0;i<=300;i++){const x=d*i/300,l=los(x),t=ter(x);mL=Math.min(mL,l);mT=Math.max(mT,t);if(i>15&&i<285)mC=Math.min(mC,l-t)}
+  const top=Math.max(mT,HA,HB)*1.15,bot=full?Math.min(0,mL)*1.08:0,X=sc(0,d,60,700),Y=sc(bot,top,372,22),r=top-bot,st=[100,200,500,1000,2000,5000].find(v=>r/v<=7)||5000;
+  let s=`<defs><clipPath id="cp6c"><rect x="60" y="22" width="640" height="350"/></clipPath></defs>`;
+  if(full&&bot<0)s+=`<rect class="zone" x="60" y="${f(Y(0))}" width="640" height="${f(372-Y(0))}"/><text x="692" y="364" text-anchor="end">sotto la superficie</text>`;
+  for(let v=Math.ceil(bot/st)*st;v<=top;v+=st)s+=`<line class="grid" x1="60" y1="${f(Y(v))}" x2="700" y2="${f(Y(v))}"/><text class="mono" x="54" y="${f(Y(v)+4)}" text-anchor="end">${it(v)}</text>`;
+  const xs=d<=100?20:d<=300?50:100;for(let x=0;x<=d;x+=xs)s+=`<text class="mono" x="${f(X(x))}" y="390" text-anchor="middle">${x}</text>`;
+  s+=`<text x="380" y="412" text-anchor="middle">distanza da A (km)</text><text x="60" y="14">quota (m)</text>`;
+  s+=`<g clip-path="url(#cp6c)"><path class="earth" d="${pathOf(x=>[X(x),Y(ter(x))],0,d,d/300)}L700,${f(Y(0))} L60,${f(Y(0))}Z"/><path class="los" d="${pathOf(x=>[X(x),Y(los(x))],0,d,d/200)}"/></g>`;
+  s+=`<circle class="dot" cx="60" cy="${f(Y(HA))}" r="6"/><circle class="dot" cx="700" cy="${f(Y(HB))}" r="6"/><text class="ink b" x="70" y="${f(Math.max(34,Y(HA)-10))}">A</text><text class="ink b" x="690" y="${f(Math.max(34,Y(HB)-10))}" text-anchor="end">B</text>`;
+  if(!full&&mL<0)s+=`<text class="ink b" x="380" y="364" text-anchor="middle">↓ la linea di vista esce dal grafico e passa sotto la superficie ↓</text>`;
+  $('#v6c').innerHTML=s;$('#dco').textContent=d+' km';$('#hcao').textContent=it(HA)+' m';$('#hcbo').textContent=it(HB)+' m';
+  $('#r6v').textContent=mL<0?"no: oltre l'orizzonte":mC<0?'ostruita da un rilievo':'sì';
+  $('#r6l').textContent=(mL<0?'−':'')+it(Math.abs(mL))+' m';$('#r6c').textContent=(mC<0?'−':'+')+it(Math.abs(mC))+' m'}
+function r6(){$('#p6a').hidden=S.sub6!=='a';$('#p6b').hidden=S.sub6!=='b';$('#p6c').hidden=S.sub6!=='c';if(S.sub6!=='a'&&playing)setPlay(false);if(S.sub6!=='b'&&pb)setPb(false);if(!playing){r6b();r6c()}const phd=+$('#phi').value,phi=phd*Math.PI/180,t0=+$('#tt').value,v=.25,d=600,lam=.002078;
+  const pos=t=>[v*t*Math.cos(phi),v*t*Math.sin(phi)];
+  const SS=t=>{const p=pos(t);return Math.hypot(d/2+p[0],p[1],10)+Math.hypot(d/2-p[0],p[1],10)};
+  const dop=t=>-(SS(t+.5)-SS(t-.5))/lam;
+  const sig=t=>2+3*Math.sin(t/37)+2*Math.sin(t/13+1)+18*Math.exp(-Math.pow(pos(t)[1]/12,2));
+  const k=560/600,mx=x=>360+x*k,my=y=>110-y*k;
+  let s=`<line class="thin" x1="80" y1="110" x2="640" y2="110"/><line class="okl" style="stroke-width:7;opacity:.45" x1="${f(80+188*k)}" y1="110" x2="${f(80+412*k)}" y2="110"/>`;
+  s+=`<text class="okc b" x="360" y="134" text-anchor="middle">zona vista da entrambe le stazioni</text>`;
+  const a=pos(-240),b=pos(240),p=pos(t0);
+  s+=`<line class="grid" stroke-dasharray="3 5" x1="${f(mx(a[0]))}" y1="${f(my(a[1]))}" x2="${f(mx(b[0]))}" y2="${f(my(b[1]))}"/>`;
+  s+=`<path class="ray" style="stroke-width:1.5;stroke-dasharray:5 4" d="M80,110 L${f(mx(p[0]))},${f(my(p[1]))} L640,110"/>`;
+  s+=`<path class="dot" style="stroke-width:1" transform="translate(${f(mx(p[0]))},${f(my(p[1]))}) rotate(${-phd})" d="M13,0 L-9,8 L-4,0 L-9,-8Z"/>`;
+  s+=`<circle class="dotb" cx="80" cy="110" r="7"/><circle class="dotb" cx="640" cy="110" r="7"/><text class="ink b" x="80" y="92" text-anchor="middle">A</text><text class="ink b" x="640" y="92" text-anchor="middle">B</text><text x="80" y="134" text-anchor="middle">600 km</text>`;
+  const T=sc(-240,240,60,700),Ys=sc(-10,30,350,240);let M=20;for(let t=-240;t<=240;t+=5)M=Math.max(M,Math.abs(dop(t)));M=Math.ceil(M/20)*20;const Yd=sc(-M,M,455,385);
+  s+=`<rect class="grid" x="60" y="240" width="640" height="110"/><rect class="grid" x="60" y="385" width="640" height="70"/>`;
+  s+=`<line class="ray2" x1="60" y1="${f(Ys(10))}" x2="700" y2="${f(Ys(10))}"/><text x="696" y="${f(Ys(10)-5)}" text-anchor="end">soglia SSB</text>`;
+  s+=`<text class="ink" x="64" y="234">segnale sul rumore (dB)</text><text class="ink" x="64" y="379">Doppler (Hz)</text>`;
+  s+=`<text class="mono" x="54" y="${f(Ys(30)+10)}" text-anchor="end">30</text><text class="mono" x="54" y="${f(Ys(0)+4)}" text-anchor="end">0</text><text class="mono" x="54" y="395" text-anchor="end">+${M}</text><text class="mono" x="54" y="455" text-anchor="end">−${M}</text>`;
+  s+=`<line class="grid" x1="60" y1="${f(Yd(0))}" x2="700" y2="${f(Yd(0))}"/>`;
+  [-4,-2,0,2,4].forEach(m=>s+=`<text class="mono" x="${f(T(m*60))}" y="474" text-anchor="middle">${m>0?'+':''}${m} min</text>`);
+  s+=`<path class="curve" d="${pathOf(t=>[T(t),Ys(Math.min(30,sig(t)))],-240,240,2)}"/><path class="ray" d="${pathOf(t=>[T(t),Yd(dop(t))],-240,240,2)}"/>`;
+  s+=`<line class="thin" x1="${f(T(t0))}" y1="240" x2="${f(T(t0))}" y2="455"/><circle class="dotb" cx="${f(T(t0))}" cy="${f(Ys(Math.min(30,sig(t0))))}" r="5"/><circle class="dot" cx="${f(T(t0))}" cy="${f(Yd(dop(t0)))}" r="5"/>`;
+  let w=0;for(let t=-240;t<=240;t++)if(sig(t)>10)w++;
+  $('#v6').innerHTML=s;$('#tto').textContent=(t0>0?'+':'')+Math.round(t0)+' s';$('#phio').textContent=phd+'°';
+  $('#r6s').textContent=(sig(t0)>=0?'+':'−')+it(Math.abs(sig(t0)))+' dB';const dp=dop(t0);$('#r6d').textContent=(Math.round(dp)===0?'':dp>0?'+':'−')+it(Math.abs(dp))+' Hz';$('#r6w').textContent=w+' s'}
+function tick(ts){if(!playing)return;const dt=Math.min(.1,(ts-last)/1000);last=ts;let t=+$('#tt').value+dt*24;if(t>240)t=-240;$('#tt').value=t;r6();requestAnimationFrame(tick)}
+function setPlay(on){playing=on;$('#pl6').textContent=on?'Pausa':'Avvia il passaggio';if(on){last=performance.now();if(+$('#tt').value>=239||+$('#tt').value===0)$('#tt').value=-240;requestAnimationFrame(tick)}}
+
+/* ---------- 7 condotti ---------- */
+const BANDS=[['3 cm',.0289],['23 cm',.2314],['70 cm',.694],['2 m',2.083],['6 m',6]].map(b=>[b[0],Math.pow(b[1]/2.5e-3,2/3)]);
+function r7(){const D=3*Math.pow(200,+$('#dk').value/100),lx=v=>60+Math.log10(v/3)/Math.log10(200)*630;
+  let s=`<rect class="zone" x="${f(lx(5))}" y="44" width="${f(lx(20)-lx(5))}" height="186"/><text class="tb b" x="${f((lx(5)+lx(20))/2)}" y="24" text-anchor="middle">evaporazione sul mare</text><text x="${f((lx(5)+lx(20))/2)}" y="40" text-anchor="middle">5–20 m</text>`;
+  s+=`<rect class="okz" x="${f(lx(100))}" y="44" width="${f(lx(500)-lx(100))}" height="186"/><text class="okc b" x="${f((lx(100)+lx(500))/2)}" y="24" text-anchor="middle">avvezione, subsidenza</text><text x="${f((lx(100)+lx(500))/2)}" y="40" text-anchor="middle">100–500 m</text>`;
+  s+=`<line class="thin" x1="60" y1="230" x2="690" y2="230"/>`;
+  [5,10,20,50,100,200,500].forEach(v=>s+=`<line class="thin" x1="${f(lx(v))}" y1="230" x2="${f(lx(v))}" y2="236"/><text class="mono" x="${f(lx(v))}" y="252" text-anchor="middle">${v}</text>`);
+  s+=`<text x="375" y="290" text-anchor="middle">spessore dello strato (m)</text>`;
+  BANDS.forEach((b,i)=>{const x=lx(b[1]),y=195-i*28,on=D>=b[1];
+    s+=`<line class="${on?'okl':'thin'}" x1="${f(x)}" y1="230" x2="${f(x)}" y2="${y}"/><circle cx="${f(x)}" cy="${y}" r="6" class="${on?'dotb':'mt'}" ${on?'style="fill:var(--ok)"':''}/><text class="${on?'okc b':'ink'}" x="${f(x-11)}" y="${y+5}" text-anchor="end">${b[0]} · da ${it(b[1])} m</text>`});
+  s+=`<line class="ray" x1="${f(lx(D))}" y1="44" x2="${f(lx(D))}" y2="262"/><text class="hot mono b" x="${f(lx(D))}" y="276" text-anchor="${D>300?'end':D<6?'start':'middle'}">${it(D)} m</text>`;
+  $('#v7').innerHTML=s;$('#dko').textContent=it(D)+' m';
+  $('#c7').innerHTML=BANDS.slice().reverse().map(b=>`<li><span>${b[0]}</span><span class="${D>=b[1]?'in':'out'}">${D>=b[1]?'ducting':'esce dallo strato: servono '+it(b[1])+' m'}</span></li>`).join('');
+  const Xm=sc(300,420,38,228),Yh=sc(0,600,180,14),Dc=Math.min(D,600);
+  let m=`<rect class="okz" x="38" y="${f(Yh(Dc))}" width="190" height="${f(180-Yh(Dc))}"/><line class="thin" x1="38" y1="180" x2="228" y2="180"/><line class="thin" x1="38" y1="14" x2="38" y2="180"/>`;
+  m+=`<path class="ray2" d="M${f(Xm(345))},180 L${f(Xm(345+70.8))},14"/><path class="ray" d="M${f(Xm(345))},180 L${f(Xm(320))},${f(Yh(Dc))} L${f(Xm(320+.118*(600-Dc)))},14"/>`;
+  m+=`<text x="133" y="200" text-anchor="middle">M →</text><text class="mono" x="32" y="184" text-anchor="end">0</text><text class="mono" x="34" y="24" text-anchor="end">600</text><text transform="translate(14,100) rotate(-90)" text-anchor="middle">quota (m)</text>`;
+  $('#v7m').innerHTML=m}
+
+/* ---------- 8 polarizzazione ---------- */
+function r8(){const x=S.pol==='V';$('#r8l').textContent=x?'≈ 20 dB':'0 dB';$('#r8k').textContent=x?'circa 200 km in meno':'nessuna perdita'}
+
+/* ---------- 9 reciprocal mixing ---------- */
+function r9a(){const pc=10*Math.log10(S.pc*1000),l10=+$('#la9').value,fl=l10-25,real=S.osc==='real',L=x=>{const a=Math.max(.2,Math.abs(x));return 10*Math.log10(Math.pow(10,(l10-20*Math.log10(a/10))/10)+Math.pow(10,fl/10))};
+  const X=sc(-100,100,58,646),Y=sc(-180,0,372,22);let s='';
+  for(let v=-180;v<=0;v+=20)s+=`<line class="grid" x1="58" y1="${f(Y(v))}" x2="646" y2="${f(Y(v))}"/><text class="mono" x="50" y="${f(Y(v)+4)}" text-anchor="end">${v}</text><text class="mono hot" x="652" y="${f(Y(v)+4)}">${(pc+v>0?'+':'')+it(pc+v).replace('-','−')}</text>`;
+  for(let v=-100;v<=100;v+=25)s+=`<text class="mono" x="${f(X(v))}" y="390" text-anchor="middle">${v>0?'+':''}${v}</text>`;
+  s+=`<text x="380" y="412" text-anchor="middle">distanza dalla portante (kHz)</text><text transform="translate(15,197) rotate(-90)" text-anchor="middle">livello rispetto alla portante (dBc/Hz)</text><text class="hot" transform="translate(712,197) rotate(-90)" text-anchor="middle">in assoluto, con portante da ${S.pc} W (dBm/Hz)</text>`;
+  if(real){const pth=pathOf(x=>[X(x),Y(L(x))],-100,100,.25);
+    s+=`<path class="beam" style="fill-opacity:1" d="${pth}L646,372 L58,372Z"/><path class="ray" d="${pth}"/>`;
+    s+=`<rect class="zone" style="fill:var(--tropo);fill-opacity:.35" x="${f(X(8.8))}" y="${f(Y(L(10)))}" width="${f(X(11.2)-X(8.8))}" height="${f(372-Y(L(10)))}"/><text class="tb b" x="${f(X(14))}" y="${f(Y(L(10))-30)}">un canale SSB a 10 kHz:</text><text class="tb b" x="${f(X(14))}" y="${f(Y(L(10))-13)}">questo rumore gli entra dentro</text>`;
+    s+=`<line class="thin" stroke-dasharray="5 4" x1="58" y1="${f(Y(fl))}" x2="646" y2="${f(Y(fl))}"/><text class="ink b" x="66" y="${f(Y(fl)+18)}">fondo: la fascia si ferma qui, non scende a zero</text><text class="hot b" x="${f(X(-58))}" y="${f(Y(L(-40))-12)}" text-anchor="middle">fascia di rumore</text>`}
+  else s+=`<text class="ink b" x="${f(X(50))}" y="200" text-anchor="middle">oscillatore ideale: una riga sola,</text><text class="ink b" x="${f(X(50))}" y="220" text-anchor="middle">nient'altro ai lati</text>`;
+  s+=`<line class="los" style="stroke-width:4" x1="${f(X(0))}" y1="372" x2="${f(X(0))}" y2="${f(Y(0))}"/><text class="ink b" x="${f(X(0)+10)}" y="36">portante CW</text>`;
+  const d=v=>real?it(v).replace('-','−')+' dBc/Hz':'nessuno';
+  $('#v9a').innerHTML=s;$('#la9o').textContent=l10+' dBc/Hz';$('#r9f').textContent=d(L(1));$('#r9g').textContent=d(L(10));$('#r9h').textContent=d(L(100));
+  $('#r9i').textContent=real?it(L(10)+33.8).replace('-','−')+' dBc':'nessuno';
+  const na=pc+L(10)+33.8,w=Math.pow(10,na/10)/1000,u=w>=1?[1,'W']:w>=1e-3?[1e3,'mW']:w>=1e-6?[1e6,'µW']:w>=1e-9?[1e9,'nW']:[1e12,'pW'];
+  $('#r9j').textContent=S.pc+' W = +'+it(pc)+' dBm';$('#r9k').textContent=real?it(na).replace('-','−')+' dBm · '+it(w*u[0],w*u[0]<10?2:0)+' '+u[1]:'nessuno';
+  const prx=na+20-fsl(20),fl0=-174+noise().F+33.8,up=prx-fl0;
+  $('#r9l').textContent=real?it(w*u[0],w*u[0]<10?2:0)+' '+u[1]:'nessuna';$('#r9m').textContent=real?sStr(prx)+(up>0?', '+it(up)+' dB sopra il suo rumore di fondo':', sotto il suo rumore di fondo'):'niente'}
+function r9(){$('#p9a').hidden=S.sub9!=='a';$('#p9b').hidden=S.sub9!=='b';r9a();const ps=+$('#ps9').value,df=Math.pow(10,+$('#df9').value/100*2.301),lr=+$('#lr9').value,lt=+$('#lt9').value,m=MODES[S.mode],bw=10*Math.log10(m[0]);
+  const fl=-174+noise().F+bw,sk=(l,x)=>Math.max(-168,l-20*Math.log10(x/10)),nr=x=>ps+sk(lr,x)+bw,nt=x=>ps+sk(lt,x)+bw;
+  const X=v=>58+Math.log10(v)/2.301*642,Y=sc(-160,0,372,22);
+  let s=`<defs><clipPath id="cp9"><rect x="58" y="22" width="642" height="350"/></clipPath></defs>`;
+  for(let v=-160;v<=0;v+=20)s+=`<line class="grid" x1="58" y1="${f(Y(v))}" x2="700" y2="${f(Y(v))}"/><text class="mono" x="50" y="${f(Y(v)+4)}" text-anchor="end">${v}</text>`;
+  [1,2,5,10,20,50,100,200].forEach(v=>s+=`<line class="grid" x1="${f(X(v))}" y1="22" x2="${f(X(v))}" y2="372"/><text class="mono" x="${f(X(v))}" y="390" text-anchor="middle">${v}</text>`);
+  s+=`<text x="380" y="412" text-anchor="middle">distanza in frequenza dal segnale forte (kHz)</text><text transform="translate(15,197) rotate(-90)" text-anchor="middle">rumore nella tua banda (dBm)</text>`;
+  s+=`<line class="los" x1="58" y1="${f(Y(fl))}" x2="700" y2="${f(Y(fl))}"/><text class="ink b" x="72" y="${f(Y(fl)+18)}">rumore di fondo senza il vicino</text>`;
+  s+=`<g clip-path="url(#cp9)"><path class="curve" d="${pathOf(v=>[X(Math.pow(10,v)),Y(nr(Math.pow(10,v)))],0,2.301,.02)}"/><path class="ray" d="${pathOf(v=>[X(Math.pow(10,v)),Y(nt(Math.pow(10,v)))],0,2.301,.02)}"/></g>`;
+  s+=`<line class="thin" stroke-dasharray="4 4" x1="${f(X(df))}" y1="22" x2="${f(X(df))}" y2="372"/><circle class="dotb" cx="${f(X(df))}" cy="${f(Math.min(372,Y(nr(df))))}" r="6"/><circle class="dot" cx="${f(X(df))}" cy="${f(Math.min(372,Y(nt(df))))}" r="6"/>`;
+  s+=`<line class="ray" style="stroke-width:5" x1="60" y1="${f(Y(ps))}" x2="60" y2="372"/><text class="hot b" x="70" y="${f(Math.max(36,Y(ps)+4))}">segnale forte: ${sStr(ps)}</text>`;
+  s+=`<text class="hot b" x="694" y="40" text-anchor="end">arancione: rumore trasmesso dal vicino</text><text class="tb b" x="694" y="58" text-anchor="end">blu: rumore dal tuo oscillatore</text>`;
+  const a=nr(df),b=nt(df),tot=10*Math.log10(Math.pow(10,a/10)+Math.pow(10,b/10)+Math.pow(10,fl/10)),up=tot-fl,d=v=>it(v,1).replace('-','−')+' dBm';
+  $('#v9').innerHTML=s;$('#ps9o').textContent=ps+' dBm · '+sStr(ps);$('#df9o').textContent=it(df,df<10?1:0)+' kHz';$('#lr9o').textContent=lr+' dBc/Hz';$('#lt9o').textContent=lt+' dBc/Hz';
+  $('#r9a').textContent=d(fl);$('#r9b').textContent=d(a);$('#r9c').textContent=d(b);$('#r9d').textContent=up<.05?'0 dB':'+'+it(up,1)+' dB';$('#r9e').textContent=up<.5?'nessun effetto':'circa '+it(Math.round(up)*10)+' km in meno'}
+
+/* ---------- comandi e navigazione ---------- */
+const RND={9:r9,0:r0,1:r1,2:r2,3:r3,4:r4,5:r5,6:r6,7:r7,8:r8,'6c':r6c};
+const SY=[];document.querySelectorAll('.seg').forEach(g=>{const key=g.dataset.key,sync=()=>g.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',isNaN(+b.dataset.v)?b.dataset.v===S[key]:Math.abs(+b.dataset.v-S[key])<1e-3));
+  g.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S[key]=isNaN(+b.dataset.v)?b.dataset.v:+b.dataset.v;SY.forEach(x=>x());RND[g.dataset.r]();if(g.dataset.r==='0')r5();if(g.dataset.r==='5')r0();r9()});SY.push(sync);sync()});
+[['h1',r1],['h2',r1],['dn',r2],['d3',r3],['da',r3a],['lrx',()=>{r0();r5();r9()}],['nfr',()=>{r0();r5();r9()}],['ps9',r9],['la9',r9a],['df9',r9],['lr9',r9],['lt9',r9],['d6',r6b],['dc',r6c],['hca',r6c],['hcb',r6c],['a6a',r6b],['a6b',r6b],['d4',r4],['a4',r4],['tt',r6],['phi',r6],['dk',r7]].forEach(([id,fn])=>$('#'+id).addEventListener('input',()=>{if(id==='tt'&&playing)setPlay(false);fn()}));
+['selP','selG'].forEach(id=>$('#'+id).addEventListener('change',()=>{S.P=+$('#selP').value;S.G=+$('#selG').value;r3();r5()}));
+$('#pl6').addEventListener('click',()=>setPlay(!playing));$('#pl6b').addEventListener('click',()=>setPb(!pb));
+
+const sheets=[...document.querySelectorAll('.sheet')],tabs=$('#tabs');let cur=0;
+let nn=0;sheets.forEach((s,i)=>{const b=document.createElement('button');b.className='tab';b.setAttribute('role','tab');b.innerHTML=`<b>${s.dataset.nonum?'':s.dataset.n!==undefined?s.dataset.n:++nn}</b>${s.dataset.tab}`;b.addEventListener('click',()=>show(i));tabs.appendChild(b)});
+function show(i,quiet){cur=Math.max(0,Math.min(sheets.length-1,i));if(playing)setPlay(false);if(pb)setPb(false);
+  sheets.forEach((s,j)=>s.hidden=j!==cur);[...tabs.children].forEach((b,j)=>{b.setAttribute('aria-selected',j===cur);if(j===cur&&b.scrollIntoView)b.scrollIntoView({block:'nearest',inline:'nearest'})});
+  $('#prev').disabled=cur===0;$('#next').disabled=cur===sheets.length-1;
+  if(!quiet){try{history.replaceState(null,'','#'+sheets[cur].id)}catch(e){}}}
+$('#prev').addEventListener('click',()=>show(cur-1));$('#next').addEventListener('click',()=>show(cur+1));
+document.addEventListener('keydown',e=>{const inp=/INPUT|BUTTON|SUMMARY/.test(document.activeElement.tagName);
+  if(e.key==='PageDown'||(e.key==='ArrowRight'&&!inp)){e.preventDefault();show(cur+1)}
+  if(e.key==='PageUp'||(e.key==='ArrowLeft'&&!inp)){e.preventDefault();show(cur-1)}});
+Object.values(RND).forEach(fn=>fn());
+const hm=/^#(p\w{1,2})$/.exec(location.hash),hi=hm?sheets.findIndex(x=>x.id===hm[1]):0;show(hi<0?0:hi,true);
+</script>
+
+</body>
+</html>
