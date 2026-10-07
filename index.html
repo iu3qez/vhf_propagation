@@ -379,8 +379,8 @@ svg .hot{fill:var(--sig)} svg .tb{fill:var(--tropo)} svg .okc{fill:var(--ok)}
       <div class="fig"><svg id="v5" viewBox="0 0 720 420" role="img" aria-label="Soglia di stazione sulla curva di perdita di percorso"></svg></div>
       <div class="side">
                 <div class="ctl"><span class="lab">Modo</span><div class="seg" data-key="mode" data-r="5"><button data-v="FM">FM</button><button data-v="SSB">SSB</button><button data-v="CW">CW</button><button data-v="FT8">FT8</button></div></div>
+                <div class="ctl"><span class="lab">Potenza</span><div class="seg" id="segP" data-key="P" data-r="5"><button data-v="5">5 W</button><button data-v="50">50 W</button><button data-v="500">500 W</button></div></div>
                 <dl class="read"><dt>Chi riceve</dt><dd id="r5e" style="font-size:17px"></dd><dt>Segnale minimo (scheda 1)</dt><dd id="r5t"></dd><dt>Perdita tollerata</dt><dd id="r5b"></dd><dt>QRB oltre l'orizzonte</dt><dd class="big" id="r5d"></dd></dl>
-        <div class="tw"><table><thead><tr><th>Stesso modo e antenna, altra potenza</th><th class="n">dB</th><th class="n">km</th></tr></thead><tbody id="t5"></tbody></table></div>
         <p class="take">10 dB valgono circa 100 km. 5 W in CW arrivano quasi dove arrivano 500 W in SSB.</p>
         <details><summary>Come è fatto il conto</summary><p><code>perdita tollerata = P(dBm) − linea TX + G_tx(dBi) + G_rx(dBi) − segnale minimo</code>. La linea in trasmissione vale 1 dB; quella in ricezione è già dentro il segnale minimo della scheda 1. Stessa antenna ai due capi. Valori mediani, senza margine di fading.</p><details class="ex"><summary>Esempio svolto: 5 W in SSB, 2×10 elementi, ambiente rurale quieto</summary><ol><li>Potenza: <code>10 · log(5000 mW) = 37,0 dBm</code>.</li><li>Linea in trasmissione: <code>−1 dB</code>.</li><li>Antenne: <code>16,2 dBd + 2,15 = 18,35 dBi</code> per parte, <code>36,7 dB</code> in due.</li><li>Segnale minimo di chi riceve, dalla scheda 1: <code>−127,0 dBm</code>.</li><li>Perdita tollerata: <code>37,0 − 1 + 36,7 + 127,0 = 199,7 dB</code>.</li><li>Sulla curva corrispondono a circa <code>430 km</code>.</li><li>Stesso conto con chi riceve in città: segnale minimo <code>−113,0 dBm</code>, perdita tollerata <code>185,7 dB</code>, circa <code>295 km</code>.</li></ol></details></details>
       </div>
@@ -458,20 +458,21 @@ svg .hot{fill:var(--sig)} svg .tb{fill:var(--tropo)} svg .okc{fill:var(--ok)}
 
   <section class="sheet" id="p8" data-tab="Polarizzazione" hidden>
     <div class="head"><p class="num">9 / 9 · polarizzazione</p><h2>La polarizzazione arriva com'è partita</h2>
-      <p class="lead">Rifrazione, troposcatter e aircraft scatter conservano la polarizzazione. Nessun modo troposferico la rimescola a tuo favore.</p></div>
+      <p class="lead">Con rifrazione, troposcatter e aircraft scatter la polarizzazione arriva come è partita. Nessun modo troposferico la rimescola a tuo favore: lo fa solo la ionosfera, con l'E sporadico.</p></div>
     <div class="cols">
       <div class="fig" style="padding:6px 18px"><div class="tw"><table>
-        <thead><tr><th>Modo</th><th>Polarizzazione</th><th>Discriminazione</th></tr></thead>
+        <thead><tr><th>Modo</th><th>Polarizzazione all'arrivo</th><th>Quanto perdi se sei incrociato</th></tr></thead>
         <tbody>
-          <tr><td>Rifrazione, super-rifrazione, condotto</td><td>conservata</td><td>oltre 20 dB</td></tr>
-          <tr><td>Troposcatter</td><td>conservata</td><td>20–30 dB</td></tr>
-          <tr><td>Aircraft scatter</td><td>conservata</td><td>alta</td></tr>
-          <tr><td>Rain scatter (10 GHz)</td><td>rimescolata</td><td>anche sotto 10 dB</td></tr>
+          <tr><td>Rifrazione, super-rifrazione, condotto</td><td>come è partita</td><td>oltre 20 dB</td></tr>
+          <tr><td>Troposcatter</td><td>come è partita</td><td>20–30 dB</td></tr>
+          <tr><td>Aircraft scatter</td><td>come è partita</td><td>molto</td></tr>
+          <tr><td>E sporadico</td><td>random, cambia di continuo</td><td>variabile: da quasi nulla a 20 dB, con QSB</td></tr>
         </tbody></table></div></div>
       <div class="side">
         <div class="ctl"><span class="lab">Tu sei in orizzontale. Il corrispondente?</span><div class="seg" data-key="pol" data-r="8"><button data-v="H">Orizzontale</button><button data-v="V">Verticale</button></div></div>
         <dl class="read"><dt>Perdita per polarizzazione</dt><dd class="big" id="r8l"></dd><dt>In portata</dt><dd id="r8k" style="font-size:19px"></dd></dl>
         <p class="take">Polarizzazione incrociata: circa 20 dB persi, come scendere da 500 W a 5 W.</p>
+        <p class="note">L'ultima colonna dice di quanti decibel cala il segnale se la tua antenna è girata di 90° rispetto all'onda che arriva. Dove la polarizzazione si conserva la perdita è piena; dove arriva random non c'è un'antenna giusta e una sbagliata, e il segnale va e viene.</p>
         <p class="note">Sul mare la polarizzazione orizzontale si accoppia un po' meglio ai condotti di superficie: cambia il livello, non la polarizzazione ricevuta.</p>
       </div>
     </div>
@@ -786,7 +787,7 @@ function r5(){const {X,Y,s:base,curve}=plBase(5),B=budget(S.P),q=rangeFor(B);let
   if(q!==Infinity)s+=`<circle class="dot" cx="${f(xq)}" cy="${f(yb)}" r="7"/><text class="hot mono b" style="font-size:16px" x="${f(Math.min(xq+10,640))}" y="364">${kmStr(q)}</text>`;
   s+=`<text class="hot b" x="66" y="${f(yb<40?yb+18:yb-8)}">${S.P} W · ${S.mode} · ${it(S.G,1)} dBd${B>240?' (soglia oltre il grafico)':''}</text>`;
   $('#v5').innerHTML=s;$('#r5b').textContent=it(B)+' dB';$('#r5t').textContent=it(thr(),1).replace('-','−')+' dBm';$('#r5e').textContent=(ENV[S.env]?ENV[S.env][2]:'solo termico')+(S.pre?', con preampli':', senza preampli');$('#r5d').textContent=kmStr(q);
-  $('#t5').innerHTML=[...new Set([5,50,500,S.P])].sort((a,b)=>a-b).map(P=>`<tr${P===S.P?' class="on"':''}><td>${P} W</td><td class="n">${it(budget(P))}</td><td class="n">${kmStr(rangeFor(budget(P))).replace(' km','')}</td></tr>`).join('')}
+  if(+$('#selP').value!==S.P)$('#selP').value=S.P}
 
 /* ---------- 6 aircraft scatter ---------- */
 let playing=false,last=0;
@@ -946,7 +947,8 @@ const RND={'1s':r1s,z:rz,i:ri,9:r9,0:r0,1:r1,2:r2,3:r3,4:r4,5:r5,6:r6,7:r7,8:r8,
 const SY=[];document.querySelectorAll('.seg').forEach(g=>{const key=g.dataset.key,sync=()=>g.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',isNaN(+b.dataset.v)?b.dataset.v===S[key]:Math.abs(+b.dataset.v-S[key])<1e-3));
   g.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S[key]=isNaN(+b.dataset.v)?b.dataset.v:+b.dataset.v;SY.forEach(x=>x());RND[g.dataset.r]();if(g.dataset.r==='0')r5();if(g.dataset.r==='5')r0();r9()});SY.push(sync);sync()});
 [['h1',r1],['h2',r1],['dn',r2],['ht',r2],['d3',r3],['da',r3a],['lrx',()=>{r0();r5();r9()}],['nfr',()=>{r0();r5();r9()}],['ps9',r9],['la9',r9a],['df9',r9],['lr9',r9],['lt9',r9],['d6',r6b],['dc',r6c],['hca',r6c],['hcb',r6c],['a6a',r6b],['a6b',r6b],['d4',r4],['a4',r4],['tt',r6],['phi',r6],['dk',r7]].forEach(([id,fn])=>$('#'+id).addEventListener('input',()=>{if(id==='tt'&&playing)setPlay(false);fn()}));
-['selP','selG'].forEach(id=>$('#'+id).addEventListener('change',()=>{S.P=+$('#selP').value;S.G=+$('#selG').value;r3();r5()}));
+['selP','selG'].forEach(id=>$('#'+id).addEventListener('change',()=>{S.P=+$('#selP').value;S.G=+$('#selG').value;SY.forEach(x=>x());r3();r5()}));
+$('#segP').addEventListener('click',()=>r3());
 $('#pl6').addEventListener('click',()=>setPlay(!playing));$('#pl6b').addEventListener('click',()=>setPb(!pb));
 
 const sheets=[...document.querySelectorAll('.sheet')],tabs=$('#tabs');let cur=0;
