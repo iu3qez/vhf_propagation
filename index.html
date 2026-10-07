@@ -272,7 +272,7 @@ svg .hot{fill:var(--sig)} svg .tb{fill:var(--tropo)} svg .okc{fill:var(--ok)}
   <section class="sheet" id="p3" data-tab="Il muro" hidden>
     <div class="head"><p class="num">4 / 9 · oltre l'orizzonte</p><h2>Il muro, e cosa c'è dopo</h2>
       <p class="lead">In vista ottica il segnale si diluisce piano. Appena oltre l'orizzonte crolla, poi smette di peggiorare in fretta. Sposta il corrispondente e guarda lo S-meter.</p></div>
-    <div class="seg sub" data-key="sub3" data-r="3"><button data-v="a">4a · In vista ottica: la diluizione</button><button data-v="b">4b · Oltre l'orizzonte: il muro</button></div>
+    <div class="seg sub" data-key="sub3" data-r="3"><button data-v="a">4a · In vista ottica: la diluizione</button><button data-v="b">4b · Oltre l'orizzonte: il muro</button><button data-v="c">4c · I limiti di modo e potenza</button></div>
     <div id="p3a"><div class="cols">
       <div class="fig"><svg id="v3a" viewBox="0 0 720 340" role="img" aria-label="Cono radio che si apre con la distanza: il disco illuminato cresce con il quadrato"></svg></div>
       <div class="side">
@@ -296,6 +296,15 @@ svg .hot{fill:var(--sig)} svg .tb{fill:var(--tropo)} svg .okc{fill:var(--ok)}
         <p class="take">Dopo il crollo, 100 km in più costano circa 10 dB. Il segnale è debole, ma c'è sempre.</p>
         <p class="note"><b>L'antenna conta più della potenza.</b> Oltre il muro ogni decibel pesa, e non tutti valgono uguale. La potenza aiuta in un solo verso: fa arrivare più forte te al corrispondente. L'antenna ha un doppio beneficio: rinforza il tuo segnale in trasmissione e, con lo stesso guadagno, quello del corrispondente in ricezione. Un QSO si chiude sul verso più debole, quindi 3 dB di antenna valgono più di 3 dB di lineare.</p>
         <p class="note">S-meter calcolato per la stazione scelta in alto, con 1 dB di linea per lato (S9 = −93 dBm). Curva ridisegnata dai dati di Fig. 4.29(A), ARRL Antenna Book, cap. 4: mediana, 50% del tempo.</p>
+      </div>
+    </div></div>
+    <div id="p3c" hidden><div class="cols">
+      <div class="fig"><svg id="v3c" viewBox="0 0 720 420" role="img" aria-label="Curva di perdita di percorso con le soglie di stazione per SSB e CW a varie potenze"></svg></div>
+      <div class="side">
+        <div class="tw"><table><thead><tr><th>Modo e potenza</th><th class="n">Perdita tollerata</th><th class="n">QRB</th></tr></thead><tbody id="t3c"></tbody></table></div>
+        <p class="take" id="k3c"></p>
+        <p class="note">Ogni riga orizzontale è la perdita che una stazione può tollerare: dove incontra la curva, lì finisce la portata. Cambiare modo o potenza sposta la riga, non la curva.</p>
+        <p class="note">È il grafico dell'articolo su GEKO 69, con le stesse ipotesi: stessa antenna dalle due parti (quella scelta in alto), 1 dB di linea per lato, ricevitore con cifra di rumore 1 dB e solo rumore termico, nessun margine per il fading. CW: segnale pari al rumore in 500 Hz. SSB: 10 dB sopra il rumore in 2,4 kHz. Con il rumore vero di chi riceve le portate si accorciano: vedi scheda 6.</p>
       </div>
     </div></div>
     <details class="spk"><summary>Note per l'oratore: perché 4a e 4b non danno lo stesso valore</summary>
@@ -639,7 +648,16 @@ function r3a(){const d=Math.round(20*Math.pow(13,+$('#da').value/100)),X=sc(0,27
   const k=(d/20)*(d/20),dB=20*Math.log10(d/20),F=fsl(d),pr=10*Math.log10(S.P*1000)+2*(S.G+2.15)-2-F;
   $('#v3a').innerHTML=s;$('#dao').textContent=d+' km';$('#m3c').textContent=sStr(pr);$('#b3c').style.width=sPct(pr)+'%';
   $('#r3a1').textContent='×'+it(k,k<10?1:0);$('#r3a2').textContent=(dB<.05?'0':'−'+it(dB,1))+' dB';$('#r3a3').textContent=it(dB/6,1);$('#r3a4').textContent=it(F)+' dB'}
-function r3(){$('#p3a').hidden=S.sub3!=='a';$('#p3b').hidden=S.sub3!=='b';r3a();const d=+$('#d3').value,{X,Y,s:base,curve}=plBase(3);let s='';
+function r3c(){const {X,Y,s:base,curve}=plBase('3c'),thr=m=>-174+10*Math.log10(MODES[m][0])+1+MODES[m][1],
+  B=(P,m)=>10*Math.log10(P*1000)-2+2*(S.G+2.15)-thr(m),rows=[[5,'SSB'],[50,'SSB'],[500,'SSB'],[5,'CW'],[50,'CW']].map(([P,m])=>({P,m,b:B(P,m),q:rangeFor(B(P,m))}));
+  let s=base+curve;rows.slice().sort((a,b)=>a.b-b.b).forEach((r,i)=>{const cw=r.m==='CW',col=cw?'var(--ok)':'var(--sig)',yb=Math.max(18,Math.min(372,Y(r.b))),inf=r.q===Infinity,xq=inf?706:X(r.q);
+    s+=`<path fill="none" stroke="${col}" stroke-width="2.5" d="M58,${f(yb)} L${f(xq)},${f(yb)}"/>`;
+    if(!inf)s+=`<line stroke="${col}" stroke-width="1.2" stroke-dasharray="4 4" x1="${f(xq)}" y1="${f(yb)}" x2="${f(xq)}" y2="372"/><circle cx="${f(xq)}" cy="${f(yb)}" r="6" fill="${col}" stroke="var(--panel)" stroke-width="2"/><text class="mono b" style="fill:${col}" x="${f(xq)}" y="${i%2?350:366}" text-anchor="middle">${Math.round(r.q/5)*5}</text>`;
+    s+=`<text class="b" style="fill:${col}" x="${cw?250:66}" y="${f(cw?yb+15:yb-6)}">${r.P} W · ${r.m}</text>`});
+  $('#v3c').innerHTML=s;
+  $('#t3c').innerHTML=rows.map(r=>`<tr><td>${r.m} · ${r.P} W</td><td class="n">${it(r.b)} dB</td><td class="n">${kmStr(r.q)}</td></tr>`).join('');
+  const a=rows[3],b=rows[2];$('#k3c').textContent=a.q===Infinity||b.q===Infinity?'Con questa antenna le soglie più alte escono dal grafico: la curva arriva a 800 km.':`5 W in CW arrivano a ${kmStr(a.q)}; 500 W in SSB a ${kmStr(b.q)}. Cento volte la potenza per circa ${Math.round(Math.abs(b.q-a.q)/10)*10} km.`}
+function r3(){$('#p3a').hidden=S.sub3!=='a';$('#p3b').hidden=S.sub3!=='b';$('#p3c').hidden=S.sub3!=='c';r3c();r3a();const d=+$('#d3').value,{X,Y,s:base,curve}=plBase(3);let s='';
   [[0,150,'diluizione e orizzonte'],[150,400,'troposcatter: pendenza dolce'],[400,480,'gradino'],[480,820,'ancora troposcatter']].forEach((z,i)=>{
     if(i%2===0)s+=`<rect class="zone" x="${f(X(z[0]))}" y="18" width="${f(X(z[1])-X(z[0]))}" height="354"/>`;
     s+=`<text x="${f((X(z[0])+X(z[1]))/2)}" y="34" text-anchor="middle" class="ink">${z[2]}</text>`});
