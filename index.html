@@ -86,6 +86,9 @@ details p{margin:8px 0 0}
 .sub0{display:flex;flex-direction:column;gap:18px}.sub0[hidden]{display:none}
 .fig img{display:block;width:100%;height:auto}
 .qs{margin:0;padding:0 0 0 14px;list-style:none;border-left:3px solid var(--sig);display:flex;flex-direction:column;gap:8px;font-size:19px;font-weight:500;line-height:1.35}
+.concl{margin:0;padding-left:28px;display:flex;flex-direction:column;gap:14px;font-size:18px;line-height:1.4;color:var(--muted)}
+.concl b{color:var(--ink);font-size:20px;display:block}
+.concl li::marker{font:600 20px var(--f-disp);color:var(--sig)}
 .hero{display:flex;flex-direction:column}
 .pano{display:block;width:100%;height:auto;max-height:44vh;min-height:180px;object-fit:cover;object-position:50% 15%;border-radius:4px;border:1px solid var(--line)}
 .spk{max-width:84ch}
@@ -465,6 +468,28 @@ svg .hot{fill:var(--sig)} svg .tb{fill:var(--tropo)} svg .okc{fill:var(--ok)}
   </div>
   </section>
 
+  <section class="sheet" id="pz" data-tab="Alpe Adria" hidden>
+    <div class="head"><p class="num">11 · conclusioni</p><h2>Torniamo al nostro Alpe Adria</h2>
+      <p class="lead">Le domande dell'inizio, con quello che abbiamo visto stasera.</p></div>
+    <div class="cols">
+      <div class="fig"><img id="mapz" alt="Mappa dei collegamenti di IQ3QC da JN63DT nell'Alpe Adria VHF 2026" width="1280" height="960"></div>
+      <div class="side">
+        <ol class="concl">
+          <li><b>Con buona probabilità i QSO li abbiamo fatti in tropo.</b> I modelli «chiudono» in troposcatter, e l'effetto Doppler tipico degli aerei non era evidente.</li>
+          <li><b>Quindi potevamo osare di più.</b> Il tropo c'è sempre: basta chiamare e insistere nelle direzioni lontane.</li>
+          <li><b>L'antenna non era adeguata.</b> Troppo QRM. Le antenne in stacking con angolo di cattura ampio sono comode, ma non vanno bene per i DX.</li>
+          <li><b>Per migliorare bisogna impegnarsi e sudare :)</b></li>
+        </ol>
+      </div>
+    </div>
+    <details class="spk"><summary>Note per l'oratore: cosa dice il modello sui tre DX</summary><ul>
+      <li><b>Il grosso dei QSO chiude.</b> Con 5 W e 2×10 elementi la scheda 6 dà circa 430 km in SSB e 575 km in CW in ambiente quieto: quasi tutta la mappa sta lì dentro.</li>
+      <li><b>I 760–788 km no, non da soli.</b> La curva mediana dà 234 dB di perdita a 788 km; il budget è 200 dB in SSB e 216 dB in CW. Mancano 17 dB in CW e oltre 30 in SSB.</li>
+      <li><b>Cosa riduce lo scarto.</b> La quota: da 1500 m l'orizzonte scende di circa 1°, che per Bray vale un centinaio di chilometri in meno; lo stesso se il corrispondente è in altura. Poi l'antenna del corrispondente, più grande della nostra, e i picchi del fading: la curva è una mediana, il QSO si fa nel momento buono.</li>
+      <li><b>Il Doppler è un indizio debole.</b> A 144 MHz lo spostamento di un aereo che attraversa il path è di pochi hertz o decine di hertz: in SSB non si nota quasi. Per i due DX in SSB l'aereo, o un rinforzo troposferico, restano ipotesi aperte.</li>
+    </ul></details>
+  </section>
+
   <section class="sheet" id="pb" data-tab="Bibliografia" data-nonum="1" hidden>
     <div class="head"><p class="num">fonti</p><h2>Da dove vengono curve e numeri</h2>
       <p class="lead">Ogni voce indica che cosa se ne è preso e in quale scheda è usata.</p></div>
@@ -822,6 +847,7 @@ function r9(){$('#p9a').hidden=S.sub9!=='a';$('#p9b').hidden=S.sub9!=='b';r9a();
 
 /* ---------- comandi e navigazione ---------- */
 const ri=()=>{$('#pia').hidden=S.sub0!=='a';$('#pib').hidden=S.sub0!=='b'};
+$('#mapz').src=$('#pib img').src;
 const RND={i:ri,9:r9,0:r0,1:r1,2:r2,3:r3,4:r4,5:r5,6:r6,7:r7,8:r8,'6c':r6c};
 const SY=[];document.querySelectorAll('.seg').forEach(g=>{const key=g.dataset.key,sync=()=>g.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',isNaN(+b.dataset.v)?b.dataset.v===S[key]:Math.abs(+b.dataset.v-S[key])<1e-3));
   g.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S[key]=isNaN(+b.dataset.v)?b.dataset.v:+b.dataset.v;SY.forEach(x=>x());RND[g.dataset.r]();if(g.dataset.r==='0')r5();if(g.dataset.r==='5')r0();r9()});SY.push(sync);sync()});

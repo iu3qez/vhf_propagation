@@ -19,13 +19,14 @@ Schede interattive sulla propagazione VHF a 144 MHz, preparate da IU3QEZ per una
 | 8 | Condotti |
 | 9 | Polarizzazione |
 | 10 | Rumore di fase e reciprocal mixing |
+| 11 | Conclusioni: torniamo al nostro Alpe Adria |
 | – | Bibliografia |
 
 ## Uso
 
 È un solo file, `index.html`, senza dipendenze oltre ai font di Google Fonts. Si apre anche in locale con un doppio clic.
 
-Navigazione: linguette in alto, frecce ←/→, PagSu/PagGiù. Link diretto a una scheda con il suo numero, `#0` … `#10`; bibliografia con `#bib`.
+Navigazione: linguette in alto, frecce ←/→, PagSu/PagGiù. Link diretto a una scheda con il suo numero, `#0` … `#11`; bibliografia con `#bib`.
 
 ## Avvertenze
 
